@@ -4,6 +4,7 @@ import onetimepass
 from selenium.webdriver.common.by import By as By
 import logging
 from common.webdriver import MyDriver
+import time
 
 from common.cli.selenium import SeleniumCLI
 
@@ -103,17 +104,23 @@ def login_and_token(username, password, otp=None, otp_secret=None, docker=False)
     el = driver.find_element("id", "email")
     logger.info("found login form")
     el.send_keys(username)
+    # input-error
     el = driver.find_element("id", "password")
     el.send_keys(password)
     el.submit()
     if otp or otp_secret:
         if otp_secret:
             otp = onetimepass.get_totp(otp_secret)
-        el = driver.find_element("id", "code")
+            print('generated otp:', otp)
+        el = driver.find_element(By.CSS_SELECTOR, "#code,div.input-error")
+        if el.tag_name == 'div':
+            raise ClientError(el.get_attribute('innerHTML'))
         logger.info("found OTP form")
         el.send_keys(otp)
         el.submit()
-    el = driver.find_element(By.CSS_SELECTOR, "a[href='/dashboard/settings']")
+    el = driver.find_element(By.CSS_SELECTOR, "a[href='/dashboard/settings'],div.input-error")
+    if el.tag_name == 'div':
+            raise ClientError(el.get_attribute('innerHTML'))
     logger.info("logged in!")
     refresh_token = driver.execute_script("return localStorage.refresh_token;")
     driver.quit()
@@ -145,13 +152,27 @@ class CLI(SeleniumCLI):
             except Exception as e:
                 logger.exception("invalid token, logging back in")
 
-        rtoken = login_and_token(
-            args.username,
-            args.password,
-            otp=args.otp,
-            otp_secret=args.otp_secret,
-            docker=args.docker,
-        )
+        tries = 0
+        while True:
+            try:
+                rtoken = login_and_token(
+                    args.username,
+                    args.password,
+                    otp=args.otp,
+                    otp_secret=args.otp_secret,
+                    docker=args.docker,
+                )
+                print(f'PLUTUS: LOGIN SUCCESS ON TRY {tries}')
+                break
+            except ClientError:
+                raise
+            except Exception as e:
+                tries += 1
+                if tries == 3:
+                    raise
+                print(f'PLUTUS: try {tries}: {e}')
+                time.sleep(5)
+
         with args.token_file.open("w") as f:
             f.write(rtoken)
         client = Client(args.client_id, rtoken)
