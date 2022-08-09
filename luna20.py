@@ -1,6 +1,7 @@
 import requests
 
 from common.cli import BasicCLI
+from common.cli.fx import CryptoFXMixin
 
 
 class Client(requests.Session):
@@ -26,13 +27,8 @@ class Client(requests.Session):
         r.raise_for_status()
         return r.json()
 
-    def usd_rate(self):
-        r = requests.get('https://api.coingecko.com/api/v3/simple/price?ids=terra-luna-2&vs_currencies=usd')
-        r.raise_for_status()
-        return r.json()['terra-luna-2']['usd']
 
-
-class CLI(BasicCLI):
+class CLI(CryptoFXMixin, BasicCLI):
     def extend_parser(self, parser):
         parser.add_argument('wallet')
     
@@ -56,7 +52,7 @@ class CLI(BasicCLI):
             hass_data['attributes']['vested'] += float(d['amount']) / 1000000
 
         hass_data['state'] = hass_data['attributes']['vested'] + hass_data['attributes']['vesting']
-        hass_data['attributes']['rate'] = c.usd_rate()
+        hass_data['attributes']['rate'] = self.get_crypto_fx_rate('terra-luna-2')
         hass_data['attributes']['usd'] = hass_data['state'] * hass_data['attributes']['rate']
         self.pprint(hass_data)
         return hass_data

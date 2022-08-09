@@ -1,9 +1,8 @@
 from functools import cached_property
-import requests
 from web3 import Web3
 from web3.middleware import geth_poa_middleware
 
-from common.cli import BasicCLI
+from common.cli import BasicCLI, fx
 
 
 CONTRACT_RACE = '0x58B699642f2a4b91Dd10800Ef852427B719dB1f0'
@@ -68,7 +67,7 @@ class Client:
         return self.web3.eth.get_balance(self.wallet) / 1000000000000000000
 
 
-class CLI(BasicCLI):
+class CLI(fx.CryptoFXMixin, BasicCLI):
     def extend_parser(self, parser):
         parser.add_argument('wallet')
         parser.add_argument('--web3', default='https://api.avax.network/ext/bc/C/rpc', help='WEB3 Provider HTTP')
@@ -84,18 +83,16 @@ class CLI(BasicCLI):
             }
         }
 
-        r = requests.get('https://api.coingecko.com/api/v3/simple/price?ids=snail-trail,avalanche-2&vs_currencies=usd')
-        r.raise_for_status()
-        r = r.json()
+        rates = self.get_crypto_fx_rate(['snail-trail', 'avalanche-2'])
 
         hass_data['attributes']['avax'] = client.get_balance()
         hass_data['attributes']['unclaimed'] = client.claimable_rewards()
         hass_data['attributes']['claimed'] = client.balance_of_slime()
         hass_data['attributes']['snails'] = client.balance_of_snails()
         hass_data['attributes']['claimed'] = client.balance_of_slime()
-        hass_data['attributes']['slime_rate'] = r['snail-trail']['usd']
-        hass_data['attributes']['avax_rate'] = r['avalanche-2']['usd']
-        hass_data['attributes']['avax_slime'] = r['avalanche-2']['usd'] / r['snail-trail']['usd']
+        hass_data['attributes']['slime_rate'] = rates['snail-trail']
+        hass_data['attributes']['avax_rate'] = rates['avalanche-2']
+        hass_data['attributes']['avax_slime'] = rates['avalanche-2'] / rates['snail-trail']
         hass_data['state'] = (hass_data['attributes']['unclaimed'] + hass_data['attributes']['claimed']) * hass_data['attributes']['slime_rate'] + hass_data['attributes']['avax'] * hass_data['attributes']['avax_rate']
 
         self.pprint(hass_data)
