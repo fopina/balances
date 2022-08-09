@@ -133,6 +133,7 @@ class CLI(otp.OTPMixin, BasicCLI):
         parser.add_argument('username')
         parser.add_argument('password')
         parser.add_argument('-p', '--pin', help='use device login with this pin code (password should be device id)')
+        parser.add_argument('-z', '--zero', action='store_true', help='include portfolio with 0 shares')
 
     def handle(self, args):
         client = Client()
@@ -152,6 +153,8 @@ class CLI(otp.OTPMixin, BasicCLI):
         # update PRODUCTs with product info
         for x in portfolio:
             if x['positionType'] != 'PRODUCT':
+                continue
+            if x['size'] == 0 and not args.zero:
                 continue
             key = f"{x['product']['symbol']}_{x['product']['productType']}".lower()
             keyv = f'{key}_val'
