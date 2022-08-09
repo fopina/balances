@@ -1,12 +1,12 @@
-import requests
-from pathlib import Path
-import onetimepass
-from selenium.webdriver.common.by import By as By
-import logging
-from common.webdriver import MyDriver
 import time
+import requests
+import logging
+from pathlib import Path
+from common.webdriver import MyDriver
+from selenium.webdriver.common.by import By as By
 
 from common.cli.selenium import SeleniumCLI
+from common.cli.otp import OTPMixin
 
 
 logging.basicConfig(
@@ -96,7 +96,7 @@ class Client(requests.Session):
         return r.json()
 
 
-def login_and_token(username, password, otp=None, otp_secret=None, docker=False):
+def login_and_token(username, password, otp=None, docker=False):
     logger.info("logging in")
     driver = MyDriver(docker=docker)
     driver.implicitly_wait(20)
@@ -108,15 +108,12 @@ def login_and_token(username, password, otp=None, otp_secret=None, docker=False)
     el = driver.find_element("id", "password")
     el.send_keys(password)
     el.submit()
-    if otp or otp_secret:
-        if otp_secret:
-            otp = onetimepass.get_totp(otp_secret)
-            print('generated otp:', otp)
+    if otp:
         el = driver.find_element(By.CSS_SELECTOR, "#code,div.input-error")
         if el.tag_name == 'div':
             raise ClientError(el.get_attribute('innerHTML'))
         logger.info("found OTP form")
-        el.send_keys(otp)
+        el.send_keys(otp(as_string=True).decode())
         el.submit()
     el = driver.find_element(By.CSS_SELECTOR, "a[href='/dashboard/settings'],div.input-error")
     if el.tag_name == 'div':
@@ -127,7 +124,7 @@ def login_and_token(username, password, otp=None, otp_secret=None, docker=False)
     return refresh_token
 
 
-class CLI(SeleniumCLI):
+class CLI(OTPMixin, SeleniumCLI):
     def extend_parser(self, parser):
         parser.add_argument("username")
         parser.add_argument("password")
@@ -139,8 +136,6 @@ class CLI(SeleniumCLI):
             default="plutus.local",
             help="File to store the refresh_token",
         )
-        parser.add_argument("-o", "--otp", help="OTP code")
-        parser.add_argument("-s", "--otp-secret", help="OTP secret (to generate code)")
 
     def get_client(self, args):
         if args.token_file.exists():
@@ -158,8 +153,7 @@ class CLI(SeleniumCLI):
                 rtoken = login_and_token(
                     args.username,
                     args.password,
-                    otp=args.otp,
-                    otp_secret=args.otp_secret,
+                    otp=self.otp_holder(args),
                     docker=args.docker,
                 )
                 print(f'PLUTUS: LOGIN SUCCESS ON TRY {tries}')

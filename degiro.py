@@ -1,7 +1,6 @@
 import requests
-import onetimepass
 
-from common.cli import BasicCLI
+from common.cli import BasicCLI, otp
 
 
 class ClientError(Exception):
@@ -23,13 +22,11 @@ class Client(requests.Session):
         url = f"{self.URL}{url.lstrip('/')}"
         return super().request(method, url, *args, **kwargs)
 
-    def login(self, username, password, otp=None, otp_secret=None, pin_code=None):
+    def login(self, username, password, otp=None, pin_code=None):
         data = {'username': username, 'password': password}
         path = 'login/secure/login'
-        if otp or otp_secret:
-            if otp_secret:
-                otp = onetimepass.get_totp(otp_secret)
-            data['oneTimePassword'] = int(otp)
+        if otp:
+            data['oneTimePassword'] = int(otp())
             path = 'login/secure/login/totp'
         elif pin_code:
             data = {
@@ -131,25 +128,16 @@ class VWDClient(Client):
         return r
 
 
-class CLI(BasicCLI):
+class CLI(otp.OTPMixin, BasicCLI):
     def extend_parser(self, parser):
         parser.add_argument('username')
         parser.add_argument('password')
-        parser.add_argument('-o', '--otp', help='OTP code')
-        parser.add_argument('-s', '--otp-secret', help='OTP secret (to generate code)')
         parser.add_argument('-p', '--pin', help='use device login with this pin code (password should be device id)')
 
     def handle(self, args):
         client = Client()
-        kw = {}
-        if args.otp:
-            kw['otp'] = args.otp
-        elif args.otp_secret:
-            kw['otp_secret'] = args.otp_secret
-        elif args.pin:
-            kw['pin_code'] = args.pin
 
-        client.login(args.username, args.password, **kw)
+        client.login(args.username, args.password, otp=self.otp_holder(args), pin_code=args.pin)
         client.get_config()
 
         portfolio = client.get_portfolio()
