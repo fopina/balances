@@ -1,9 +1,11 @@
 from selenium import webdriver
 from pathlib import Path
 
+DEFAULT = object()
+
 
 class MyDriver(webdriver.Chrome):
-    def __init__(self, executable_path="chromedriver", docker=False, **kwargs):
+    def __init__(self, executable_path="chromedriver", docker=False, user_agent=DEFAULT, **kwargs):
         options = webdriver.ChromeOptions()
         if Path("/Applications/Chromium.app/Contents/MacOS/Chromium").exists():
             # for dev environment
@@ -19,10 +21,16 @@ class MyDriver(webdriver.Chrome):
         options.add_argument("--disable-blink-features")
         options.add_argument("--disable-blink-features=AutomationControlled")
         super().__init__(executable_path=executable_path, options=options, **kwargs)
-        self.execute_cdp_cmd(
-            "Network.setUserAgentOverride",
-            {"userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:102.0) Gecko/20100101 Firefox/102.0"},
-        )
+        if user_agent == DEFAULT:
+            self.execute_cdp_cmd(
+                "Network.setUserAgentOverride",
+                {"userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:102.0) Gecko/20100101 Firefox/102.0"},
+            )
+        elif user_agent is not None:
+            self.execute_cdp_cmd(
+                "Network.setUserAgentOverride",
+                {"userAgent": user_agent},
+            )
 
 
 def selenium_parser(parser):
