@@ -107,14 +107,14 @@ class CLI(fx.CryptoFXMixin, BasicCLI):
         hass_data['attributes']['avax'] = client.get_balance()
         hass_data['attributes']['unclaimed'] = client.claimable_slime()
         hass_data['attributes']['claimed'] = client.balance_of_slime()
-        hass_data['attributes']['unclaimed'] = client.claimable_wavax()
-        hass_data['attributes']['claimed'] = client.balance_of_wavax()
+        hass_data['attributes']['unclaimedw'] = client.claimable_wavax()
+        hass_data['attributes']['wavax'] = client.balance_of_wavax()
         hass_data['attributes']['snails'] = client.balance_of_snails()
         hass_data['attributes']['claimed'] = client.balance_of_slime()
         hass_data['attributes']['slime_rate'] = rates['snail-trail']
         hass_data['attributes']['avax_rate'] = rates['avalanche-2']
         hass_data['attributes']['avax_slime'] = rates['avalanche-2'] / rates['snail-trail']
-        hass_data['state'] = (hass_data['attributes']['unclaimed'] + hass_data['attributes']['claimed']) * hass_data['attributes']['slime_rate'] + hass_data['attributes']['avax'] * hass_data['attributes']['avax_rate']
+        hass_data['state'] = (hass_data['attributes']['unclaimed'] + hass_data['attributes']['claimed']) * hass_data['attributes']['slime_rate'] + (hass_data['attributes']['avax'] + hass_data['attributes']['unclaimedw'] + hass_data['attributes']['wavax']) * hass_data['attributes']['avax_rate']
 
         self.pprint(hass_data)
         return hass_data
