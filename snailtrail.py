@@ -8,6 +8,8 @@ from common.cli import BasicCLI, fx
 CONTRACT_RACE = '0x58B699642f2a4b91Dd10800Ef852427B719dB1f0'
 CONTRACT_SLIME = '0x5a15Bdcf9a3A8e799fa4381E666466a516F2d9C8'
 CONTRACT_SNAILNFT = '0xec675B7C5471c67E9B203c6D1C604df28A89FB7f'
+CONTRACT_MEGA_RACE = '0xa65592fC7afa222Ac30a80F273280e6477a274e3'
+CONTRACT_WAVAX = '0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7'
 
 ABI_RACE = [
     {
@@ -54,11 +56,28 @@ class Client:
     def snailnft_contract(self):
         return self.web3.eth.contract(address=self.web3.toChecksumAddress(CONTRACT_SNAILNFT), abi=ABI_ACCOUNT)
 
-    def claimable_rewards(self):
+    @cached_property
+    def wavax_contract(self):
+        return self.web3.eth.contract(address=self.web3.toChecksumAddress(CONTRACT_WAVAX), abi=ABI_ACCOUNT)
+
+    @cached_property
+    def mega_race_contract(self):
+        return self.web3.eth.contract(address=self.web3.toChecksumAddress(CONTRACT_MEGA_RACE), abi=ABI_RACE)
+
+    def claimable_slime(self):
         return self.race_contract.functions.claimableRewards().call({'from': self.wallet}) / 1000000000000000000
 
     def balance_of_slime(self):
         return self.slime_contract.functions.balanceOf(self.wallet).call({'from': self.wallet}) / 1000000000000000000
+
+    def claimable_wavax(self):
+        return self.mega_race_contract.functions.claimableRewards().call({'from': self.wallet}) / 1000000000000000000
+
+    def balance_of_wavax(self, raw=False):
+        x = self.wavax_contract.functions.balanceOf(self.wallet).call({'from': self.wallet})
+        if raw:
+            return x
+        return x / 1000000000000000000
 
     def balance_of_snails(self):
         return self.snailnft_contract.functions.balanceOf(self.wallet).call({'from': self.wallet})
@@ -86,8 +105,10 @@ class CLI(fx.CryptoFXMixin, BasicCLI):
         rates = self.get_crypto_fx_rate(['snail-trail', 'avalanche-2'])
 
         hass_data['attributes']['avax'] = client.get_balance()
-        hass_data['attributes']['unclaimed'] = client.claimable_rewards()
+        hass_data['attributes']['unclaimed'] = client.claimable_slime()
         hass_data['attributes']['claimed'] = client.balance_of_slime()
+        hass_data['attributes']['unclaimed'] = client.claimable_wavax()
+        hass_data['attributes']['claimed'] = client.balance_of_wavax()
         hass_data['attributes']['snails'] = client.balance_of_snails()
         hass_data['attributes']['claimed'] = client.balance_of_slime()
         hass_data['attributes']['slime_rate'] = rates['snail-trail']
