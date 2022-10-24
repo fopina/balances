@@ -2,7 +2,7 @@ from functools import cached_property
 from web3 import Web3
 from web3.middleware import geth_poa_middleware
 
-from common.cli import BasicCLI, fx
+from common.cli import BasicCLI, fx, hass
 
 
 CONTRACT_RACE = '0x58B699642f2a4b91Dd10800Ef852427B719dB1f0'
@@ -87,37 +87,53 @@ class Client:
 
 
 class CLI(fx.CryptoFXMixin, BasicCLI):
+    def default_parser(self, parser):
+        parser.add_argument('--hass', nargs='+', help='URL(s) to push the data to HASS - ONE FOR EACH WALLET SPECIFIED, SAME ORDER')
+        parser.add_argument('--hass-token', help='Token to push to HASS')
+
     def extend_parser(self, parser):
-        parser.add_argument('wallet')
+        parser.add_argument('wallet', nargs='+')
         parser.add_argument('--web3', default='https://api.avax.network/ext/bc/C/rpc', help='WEB3 Provider HTTP')
         parser.add_argument('-k', '--ignore-ssl', action='store_true', help='Disable TLS verification')
     
     def handle(self, args):
-        client = Client(args.wallet, args.web3)
-
-        hass_data = {
-            'state': 0,
-            'attributes': {
-                'unit_of_measurement': 'USD',
-            }
-        }
+        if args.hass:
+            assert args.hass_token is not None
+            assert len(args.hass) == len(args.wallet)
 
         rates = self.get_crypto_fx_rate(['snail-trail', 'avalanche-2'])
+        r = []
+        for wallet in args.wallet:
+            client = Client(wallet, args.web3)
 
-        hass_data['attributes']['avax'] = client.get_balance()
-        hass_data['attributes']['unclaimed'] = client.claimable_slime()
-        hass_data['attributes']['claimed'] = client.balance_of_slime()
-        hass_data['attributes']['unclaimedw'] = client.claimable_wavax()
-        hass_data['attributes']['wavax'] = client.balance_of_wavax()
-        hass_data['attributes']['snails'] = client.balance_of_snails()
-        hass_data['attributes']['claimed'] = client.balance_of_slime()
-        hass_data['attributes']['slime_rate'] = rates['snail-trail']
-        hass_data['attributes']['avax_rate'] = rates['avalanche-2']
-        hass_data['attributes']['avax_slime'] = rates['avalanche-2'] / rates['snail-trail']
-        hass_data['state'] = (hass_data['attributes']['unclaimed'] + hass_data['attributes']['claimed']) * hass_data['attributes']['slime_rate'] + (hass_data['attributes']['avax'] + hass_data['attributes']['unclaimedw'] + hass_data['attributes']['wavax']) * hass_data['attributes']['avax_rate']
+            hass_data = {
+                'state': 0,
+                'attributes': {
+                    'unit_of_measurement': 'USD',
+                }
+            }
 
-        self.pprint(hass_data)
-        return hass_data
+            hass_data['attributes']['avax'] = client.get_balance()
+            hass_data['attributes']['unclaimed'] = client.claimable_slime()
+            hass_data['attributes']['claimed'] = client.balance_of_slime()
+            hass_data['attributes']['unclaimedw'] = client.claimable_wavax()
+            hass_data['attributes']['wavax'] = client.balance_of_wavax()
+            hass_data['attributes']['snails'] = client.balance_of_snails()
+            hass_data['attributes']['claimed'] = client.balance_of_slime()
+            hass_data['attributes']['slime_rate'] = rates['snail-trail']
+            hass_data['attributes']['avax_rate'] = rates['avalanche-2']
+            hass_data['attributes']['avax_slime'] = rates['avalanche-2'] / rates['snail-trail']
+            hass_data['state'] = (hass_data['attributes']['unclaimed'] + hass_data['attributes']['claimed']) * hass_data['attributes']['slime_rate'] + (hass_data['attributes']['avax'] + hass_data['attributes']['unclaimedw'] + hass_data['attributes']['wavax']) * hass_data['attributes']['avax_rate']
+
+            self.pprint(hass_data)
+            r.append(hass_data)
+        return r
+
+    def push_to_hass(self, args, data):
+        if args.hass:
+            for i, v in enumerate(data):
+                hu = args.hass[i]
+                hass.push_to_hass(hu, args.hass_token, v)
 
 
 if __name__ == '__main__':

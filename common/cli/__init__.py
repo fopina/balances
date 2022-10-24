@@ -9,15 +9,22 @@ class BasicCLI:
     def build_parser(self):
         parser = argparse.ArgumentParser()
         self.extend_parser(parser)
-        parser.add_argument('--hass', nargs=2, metavar=('ENTITY_URL', 'TOKEN'), help='push to HASS')
+        self.default_parser(parser)
         return parser
+
+    def default_parser(self, parser):
+        parser.add_argument('--hass', nargs=2, metavar=('ENTITY_URL', 'TOKEN'), help='push to HASS')
 
     def handle(self, args):
         """for subclasses to implement CLI main"""
 
     def execute(self, argv=None):
         args = self.build_parser().parse_args(argv)
-        hass.push_to_hass(args, self.handle(args))
+        self.push_to_hass(args, self.handle(args))
+
+    def push_to_hass(self, args, data):
+        if args.hass:
+            hass.push_to_hass(args.hass[0], args.hass[1], data)
 
     def pprint(self, *args, **kwargs):
         hass.pprint(*args, **kwargs)

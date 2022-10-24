@@ -90,19 +90,21 @@ def main(argv=None):
     ust_balance = (float(rate) * int(balance)) / 1000000
     usd_balance = ust_balance * usd_rate()
 
-    push_to_hass(
-        args,
-        {
-            'state': ust_balance,
-            'attributes': {
-                'extra_ust': leftover,
-                'balance': balance,
-                'rate': rate,
-                'usd': usd_balance,
-                'unit_of_measurement': 'UST',
-            }
-        },
-    )
+    if args.hass:
+        push_to_hass(
+            args.hass[0],
+            args.hass[1],
+            {
+                'state': ust_balance,
+                'attributes': {
+                    'extra_ust': leftover,
+                    'balance': balance,
+                    'rate': rate,
+                    'usd': usd_balance,
+                    'unit_of_measurement': 'UST',
+                }
+            },
+        )
 
 
 if __name__ == '__main__':
