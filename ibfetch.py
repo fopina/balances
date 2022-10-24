@@ -43,6 +43,10 @@ def login_and_token(args):
     try:
         driver.get("https://www.interactivebrokers.co.uk/sso/Login?RL=1")
         el = driver.find_element(By.ID, "user_name")
+        # accept privacy cookies
+        driver.add_cookie({"name": "IB_PRIV_PREFS", "value": "0%7C0%7C0"})
+        driver.get("https://www.interactivebrokers.co.uk/sso/Login?RL=1")
+        el = driver.find_element(By.ID, "user_name")
         time.sleep(1)
         logger.info("found login form")
         el.send_keys(args.username)
@@ -57,7 +61,8 @@ def login_and_token(args):
         logger.info("logged in!")
         refresh_token = driver.execute_script("return document.cookie;")
     except Exception:
-        driver.save_screenshot(str(args.token_file.parent / 'ibfetch-debug.png'))
+        if args.screenshot:
+            driver.save_screenshot(str(args.token_file.parent / 'ibfetch-debug.png'))
         raise
     finally:
         driver.quit()
@@ -75,6 +80,7 @@ class CLI(SeleniumCLI):
             default="ibfetch.local",
             help="File to store current cookies",
         )
+        parser.add_argument('--screenshot', action='store_true', help='Take screenshot on exception')
 
     def get_client(self, args):
         if args.token_file.exists():
