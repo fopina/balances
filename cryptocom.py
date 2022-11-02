@@ -26,7 +26,9 @@ class Client(requests.Session):
 
     def request(self, method, url, *args, **kwargs):
         url = f"{self.URL}{url.lstrip('/')}"
-        return super().request(method, url, *args, **kwargs)
+        r = super().request(method, url, *args, **kwargs)
+        r.raise_for_status()
+        return r
 
     def allocations(self):
         return self.get('portfolio/profit/api/v1/allocations').json()
@@ -101,16 +103,20 @@ class CLI(BasicCLI):
         }
         print(f"diamonds: {vault_diamonds}")
 
-        tokens = client.allocations()
+        try:
+            tokens = client.allocations()
 
-        for k in tokens['coins']:
-            _id = k['id'].lower()
-            amt = float(k['amount']['amount'])
-            val = float(k['price_native']['amount'])
-            print(f"{_id}: {val} ({amt})")
-            hass_data['attributes'][f'{_id}_amt'] = amt
-            hass_data['attributes'][f'{_id}_val'] = val
-            hass_data['state'] += val
+            for k in tokens['coins']:
+                _id = k['id'].lower()
+                amt = float(k['amount']['amount'])
+                val = float(k['price_native']['amount'])
+                print(f"{_id}: {val} ({amt})")
+                hass_data['attributes'][f'{_id}_amt'] = amt
+                hass_data['attributes'][f'{_id}_val'] = val
+                hass_data['state'] += val
+        except requests.exceptions.HTTPError:
+            # FIXME: ignoring this for now but need replacement endpoint!
+            print('FAILED TO GET ALLOCATIONS #FIXME')
 
         eur = float(client.fiat_overview()['account']['balance']['amount'])
         hass_data['attributes']['fiat_val'] = eur
