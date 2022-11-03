@@ -1,13 +1,14 @@
-import time
-import requests
 import logging
+import time
+from datetime import datetime, timedelta
 from pathlib import Path
-from common.webdriver import MyDriver
+
+import requests
 from selenium.webdriver.common.by import By as By
 
-from common.cli.selenium import SeleniumCLI
 from common.cli.otp import OTPMixin
-
+from common.cli.selenium import SeleniumCLI
+from common.webdriver import MyDriver
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s"
@@ -93,6 +94,10 @@ class Client(requests.Session):
         except requests.exceptions.HTTPError as e:
             print(e.response.text)
             raise
+        return r.json()
+
+    def transaction_list(self):
+        r = self.get("https://api.plutus.it/platform/transactions/pluton")
         return r.json()
 
 
@@ -204,6 +209,21 @@ class CLI(OTPMixin, SeleniumCLI):
         hass_data["attributes"]["cardavail_val"] = card["AvailableBalance"] / 100
         hass_data["state"] += hass_data["attributes"]["card_val"]
 
+        amount = 0
+        date = None
+        for ttx in reversed(client.transaction_list()):
+            if not ttx['available']:
+                date_str = ttx['createdAt'].split('T')[0]
+                if date is not None and date != date_str:
+                    break
+                amount += float(ttx['amount'])
+                date = date_str
+        if date is None:
+            hass_data["attributes"]["next_vest"] = '-'
+            hass_data["attributes"]["next_vest_amt"] = 0
+        else:
+            hass_data["attributes"]["next_vest"] = datetime.strftime(datetime.strptime(date, '%Y-%m-%d') + timedelta(days=46), '%Y-%m-%d')
+            hass_data["attributes"]["next_vest_amt"] = amount
         self.pprint(hass_data)
         return hass_data
 
