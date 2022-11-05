@@ -1,11 +1,13 @@
-import argparse
 import requests
 import re
 from datetime import datetime
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
+import logging
 
 from common.cli import BasicCLI
+
+logger = logging.getLogger(__name__)
 
 
 class ClientError(Exception):
@@ -41,7 +43,7 @@ class Client(requests.Session):
                 'password': password,
                 'authVersion': '1',
                 'username': username,
-                'path': 'https://faturas.portaldasfinancas.gov.pt/painelAdquirente.action',
+                'path': 'painelAdquirente.action',
                 '_csrf': m[0],
                 'selectedAuthMethod': 'N',
             }
@@ -55,13 +57,20 @@ class Client(requests.Session):
         m = re.findall(r'<input type="hidden" name="(.*?)" value="(.*?)">', r.text)
         if not m:
             raise ClientError('failed to login')
-        r = self.post(
-            'https://faturas.portaldasfinancas.gov.pt/painelAdquirente.action',
-            data={
-                x: y
-                for x, y in m
-            }
-        )
+
+        for _try in range(10):
+            # flaky faturas.portaldasfinancas.gov.pt returning 404 sometimes
+            # retry a few times
+            r = self.post(
+                'https://faturas.portaldasfinancas.gov.pt/painelAdquirente.action',
+                data={
+                    x: y
+                    for x, y in m
+                }
+            )
+            if r.status_code != 404:
+                break
+            logger.error('Failed try %d', _try)
         return self._parse_dashboard(r)
     
     def dashboard_stats(self):
