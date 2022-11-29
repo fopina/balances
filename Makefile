@@ -1,7 +1,7 @@
 OBJECTS = anchor celsius degiro kucoinx financas caixabreak luna20 cryptocom
 OBJECTSGCC = snailtrail
 OBJECTSCHROMIUM = plutus ibfetch
-BASE_IMAGE_NAME = fopina/balances
+BASE_IMAGE_NAME = ghcr.io/fopina/balances
 PLATFORMS = linux/amd64,linux/arm/v7,linux/arm64
 ACTION = push
 DOCKER_EXTRA =
@@ -9,8 +9,8 @@ DOCKER_EXTRA =
 templ:
 		docker buildx build \
 	              --platform $(PLATFORMS) \
-				  -t $(BASE_IMAGE_NAME):$(SERVICE)-balance-checker-$(shell git log --oneline $(SERVICE).py | wc -l | tr -d ' ') \
-				  -t $(BASE_IMAGE_NAME):$(SERVICE)-balance-checker \
+				  -t $(BASE_IMAGE_NAME):$(SERVICE)-$(shell git log --oneline $(SERVICE).py | wc -l | tr -d ' ') \
+				  -t $(BASE_IMAGE_NAME):$(SERVICE) \
 				  --build-arg ENTRY=$(SERVICE) $(DOCKER_EXTRA) \
 				  -f docker/Dockerfile \
 				  --$(ACTION) .
@@ -18,8 +18,8 @@ templ:
 templ-gcc:
 		docker buildx build \
 	              --platform $(PLATFORMS) \
-				  -t $(BASE_IMAGE_NAME):$(SERVICE)-balance-checker-$(shell git log --oneline $(SERVICE).py | wc -l | tr -d ' ') \
-				  -t $(BASE_IMAGE_NAME):$(SERVICE)-balance-checker \
+				  -t $(BASE_IMAGE_NAME):$(SERVICE)-$(shell git log --oneline $(SERVICE).py | wc -l | tr -d ' ') \
+				  -t $(BASE_IMAGE_NAME):$(SERVICE) \
 				  --build-arg ENTRY=$(SERVICE) --build-arg TARGETBASE=gcc $(DOCKER_EXTRA) \
 				  -f docker/Dockerfile \
 				  --$(ACTION) .
@@ -27,8 +27,8 @@ templ-gcc:
 templ-chromium:
 		docker buildx build \
 	              --platform $(PLATFORMS) \
-				  -t $(BASE_IMAGE_NAME):$(SERVICE)-balance-checker-$(shell git log --oneline $(SERVICE).py | wc -l | tr -d ' ') \
-				  -t $(BASE_IMAGE_NAME):$(SERVICE)-balance-checker \
+				  -t $(BASE_IMAGE_NAME):$(SERVICE)-$(shell git log --oneline $(SERVICE).py | wc -l | tr -d ' ') \
+				  -t $(BASE_IMAGE_NAME):$(SERVICE) \
 				  --build-arg ENTRY=$(SERVICE) --build-arg TARGETBASE=chromium $(DOCKER_EXTRA) \
 				  -f docker/Dockerfile \
 				  --$(ACTION) .
