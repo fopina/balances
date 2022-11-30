@@ -5,12 +5,13 @@ BASE_IMAGE_NAME = ghcr.io/fopina/balances
 PLATFORMS = linux/amd64,linux/arm/v7,linux/arm64
 ACTION = push
 DOCKER_EXTRA =
+SUFFIX = 
 
 templ:
 		docker buildx build \
 	              --platform $(PLATFORMS) \
-				  -t $(BASE_IMAGE_NAME):$(SERVICE)-$(shell git log --oneline $(SERVICE).py | wc -l | tr -d ' ') \
-				  -t $(BASE_IMAGE_NAME):$(SERVICE) \
+				  -t $(BASE_IMAGE_NAME):$(SERVICE)$(SUFFIX)-$(shell git log --oneline $(SERVICE).py | wc -l | tr -d ' ') \
+				  -t $(BASE_IMAGE_NAME):$(SERVICE)$(SUFFIX) \
 				  --build-arg ENTRY=$(SERVICE) $(DOCKER_EXTRA) \
 				  -f docker/Dockerfile \
 				  --$(ACTION) .
@@ -18,8 +19,8 @@ templ:
 templ-gcc:
 		docker buildx build \
 	              --platform $(PLATFORMS) \
-				  -t $(BASE_IMAGE_NAME):$(SERVICE)-$(shell git log --oneline $(SERVICE).py | wc -l | tr -d ' ') \
-				  -t $(BASE_IMAGE_NAME):$(SERVICE) \
+				  -t $(BASE_IMAGE_NAME):$(SERVICE)$(SUFFIX)-$(shell git log --oneline $(SERVICE).py | wc -l | tr -d ' ') \
+				  -t $(BASE_IMAGE_NAME):$(SERVICE)$(SUFFIX) \
 				  --build-arg ENTRY=$(SERVICE) --build-arg TARGETBASE=gcc $(DOCKER_EXTRA) \
 				  -f docker/Dockerfile \
 				  --$(ACTION) .
@@ -27,8 +28,8 @@ templ-gcc:
 templ-chromium:
 		docker buildx build \
 	              --platform $(PLATFORMS) \
-				  -t $(BASE_IMAGE_NAME):$(SERVICE)-$(shell git log --oneline $(SERVICE).py | wc -l | tr -d ' ') \
-				  -t $(BASE_IMAGE_NAME):$(SERVICE) \
+				  -t $(BASE_IMAGE_NAME):$(SERVICE)$(SUFFIX)-$(shell git log --oneline $(SERVICE).py | wc -l | tr -d ' ') \
+				  -t $(BASE_IMAGE_NAME):$(SERVICE)$(SUFFIX) \
 				  --build-arg ENTRY=$(SERVICE) --build-arg TARGETBASE=chromium $(DOCKER_EXTRA) \
 				  -f docker/Dockerfile \
 				  --$(ACTION) .
