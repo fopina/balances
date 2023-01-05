@@ -4,6 +4,8 @@ from datetime import datetime
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 import logging
+import html
+import time
 
 from common.cli import BasicCLI
 
@@ -71,6 +73,7 @@ class Client(requests.Session):
             if r.status_code != 404:
                 break
             logger.error('Failed try %d', _try)
+            time.sleep(0.5)
         return self._parse_dashboard(r)
     
     def dashboard_stats(self):
@@ -95,16 +98,20 @@ class Client(requests.Session):
             }
         )
         r.raise_for_status()
+        data = r.json()
+        if not data['success']:
+            raise ClientError(html.unescape('\n'.join(data['messages']['error'])))
+
         return r.json()['totalElementos']
     
-    def _parse_dashboard(self, r):
-        r.raise_for_status()
+    def _parse_dashboard(self, response):
+        response.raise_for_status()
         m = re.findall(
             r'<div class="benef-icon atf atf-(.*?)"></div>'
             r'\s*<div class="benefbox1-title">\s*<div>\s*<h2>(.*?)</h2>\s*</div>\s*</div>'
             r'\s*<span class="euro-value">(.*?) &euro;</span>'
             r'\s*<p>(.*?)</p>',
-            r.text,
+            response.text,
             re.DOTALL,
         )
         data = {}
@@ -127,8 +134,20 @@ class CLI(BasicCLI):
         parser.add_argument('-p', '--pin', help='use device login with this pin code (password should be device id)')
     
     def handle(self, args):
-        client = Client()
-        stats = client.login(args.username, args.password)
+        # sometimes portal fails to load dashboard with a maintenance message such as:
+        # '<strong>Por motivos de ordem t&eacute;cnica n&atilde;o nos &eacute; poss&iacute;vel responder ao seu pedido.'
+        # and stats (parsed) will be empty
+        # session needs to be reset to retry (as login already "succeeded")
+        for _try in range(10):
+            client = Client()
+            stats = client.login(args.username, args.password)
+            if stats:
+                break
+            logger.error('empty stats, try %d', _try)
+            time.sleep(1)
+        else:
+            raise ClientError('unable to parse stats from dashboard')
+
         pending = client.pending_invoices()
         print(f'Pending: {pending}')
 
@@ -150,4 +169,8 @@ class CLI(BasicCLI):
 
 
 if __name__ == '__main__':
-    CLI()()
+    try:
+        CLI()()
+    except ClientError as e:
+        logger.error(e)
+        exit(1)
