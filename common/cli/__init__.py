@@ -3,6 +3,8 @@ from .. import hass
 
 
 class BasicCLI:
+    args: argparse.Namespace
+
     def extend_parser(self, parser):
         """for subclasses to add custom arguments"""
 
@@ -19,12 +21,13 @@ class BasicCLI:
         """for subclasses to implement CLI main"""
 
     def execute(self, argv=None):
-        args = self.build_parser().parse_args(argv)
-        self.push_to_hass(args, self.handle(args))
+        self.args = self.build_parser().parse_args(argv)
+        # FIXME: remove `args` arg from self.handle (after updating all collectors)
+        self.push_to_hass(self.handle(self.args))
 
-    def push_to_hass(self, args, data):
-        if args.hass:
-            hass.push_to_hass(args.hass[0], args.hass[1], data)
+    def push_to_hass(self, data):
+        if self.args.hass:
+            hass.push_to_hass(self.args.hass[0], self.args.hass[1], data)
 
     def pprint(self, *args, **kwargs):
         hass.pprint(*args, **kwargs)
