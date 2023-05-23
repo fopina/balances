@@ -1,6 +1,7 @@
 from functools import cached_property
 from web3 import Web3
 from web3.middleware import geth_poa_middleware
+from requests.exceptions import HTTPError
 
 from common.cli import BasicCLI, fx, hass
 
@@ -88,20 +89,28 @@ class Client:
 
 class CLI(fx.CryptoFXMixin, BasicCLI):
     def default_parser(self, parser):
-        parser.add_argument('--hass', nargs='+', help='URL(s) to push the data to HASS - ONE FOR EACH WALLET SPECIFIED, SAME ORDER')
+        parser.add_argument(
+            '--hass', nargs='+', help='URL(s) to push the data to HASS - ONE FOR EACH WALLET SPECIFIED, SAME ORDER'
+        )
         parser.add_argument('--hass-token', help='Token to push to HASS')
 
     def extend_parser(self, parser):
         parser.add_argument('wallet', nargs='+')
         parser.add_argument('--web3', default='https://api.avax.network/ext/bc/C/rpc', help='WEB3 Provider HTTP')
         parser.add_argument('-k', '--ignore-ssl', action='store_true', help='Disable TLS verification')
-    
+
     def handle(self, args):
         if args.hass:
             assert args.hass_token is not None
             assert len(args.hass) == len(args.wallet)
 
-        rates = self.get_crypto_fx_rate(['snail-trail', 'avalanche-2'])
+        try:
+            rates = self.get_crypto_fx_rate(['snail-trail', 'avalanche-2'])
+        except HTTPError:
+            # fall back to coinmarketcap
+            rates = self.get_crypto_fx_rate_coinmarketcap(['avalanche', 'snail-trail'])
+            rates['avalanche-2'] = rates['avalanche']
+
         r = []
         for wallet in args.wallet:
             client = Client(wallet, args.web3)
@@ -110,7 +119,7 @@ class CLI(fx.CryptoFXMixin, BasicCLI):
                 'state': 0,
                 'attributes': {
                     'unit_of_measurement': 'USD',
-                }
+                },
             }
 
             hass_data['attributes']['avax'] = client.get_balance()
@@ -123,17 +132,27 @@ class CLI(fx.CryptoFXMixin, BasicCLI):
             hass_data['attributes']['slime_rate'] = rates['snail-trail']
             hass_data['attributes']['avax_rate'] = rates['avalanche-2']
             hass_data['attributes']['avax_slime'] = rates['avalanche-2'] / rates['snail-trail']
-            hass_data['state'] = (hass_data['attributes']['unclaimed'] + hass_data['attributes']['claimed']) * hass_data['attributes']['slime_rate'] + (hass_data['attributes']['avax'] + hass_data['attributes']['unclaimedw'] + hass_data['attributes']['wavax']) * hass_data['attributes']['avax_rate']
+            hass_data['state'] = (
+                hass_data['attributes']['unclaimed'] + hass_data['attributes']['claimed']
+            ) * hass_data['attributes']['slime_rate'] + (
+                hass_data['attributes']['avax']
+                + hass_data['attributes']['unclaimedw']
+                + hass_data['attributes']['wavax']
+            ) * hass_data[
+                'attributes'
+            ][
+                'avax_rate'
+            ]
 
             self.pprint(hass_data)
             r.append(hass_data)
         return r
 
-    def push_to_hass(self, args, data):
-        if args.hass:
+    def push_to_hass(self, data):
+        if self.args.hass:
             for i, v in enumerate(data):
-                hu = args.hass[i]
-                hass.push_to_hass(hu, args.hass_token, v)
+                hu = self.args.hass[i]
+                hass.push_to_hass(hu, self.args.hass_token, v)
 
 
 if __name__ == '__main__':
