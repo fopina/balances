@@ -10,9 +10,7 @@ from common.cli.otp import OTPMixin
 from common.cli.selenium import SeleniumCLI
 from common.webdriver import MyDriver
 
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s"
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger(__name__)
 
 
@@ -44,9 +42,7 @@ class Client(requests.Session):
             "client_id": self._client_id,
             "refresh_token": self._refresh_token,
         }
-        r = self.post(
-            "https://authenticate.plutus.it/auth/refresh-token", json=data
-        ).json()
+        r = self.post("https://authenticate.plutus.it/auth/refresh-token", json=data).json()
         self.update_auth(r["id_token"])
 
     def request(self, method, url, *args, **kwargs):
@@ -122,7 +118,7 @@ def login_and_token(username, password, otp=None, docker=False):
         el.submit()
     el = driver.find_element(By.CSS_SELECTOR, "a[href='/dashboard/settings'],div.input-error")
     if el.tag_name == 'div':
-            raise ClientError(el.get_attribute('innerHTML'))
+        raise ClientError(el.get_attribute('innerHTML'))
     logger.info("logged in!")
     refresh_token = driver.execute_script("return localStorage.refresh_token;")
     driver.quit()
@@ -177,7 +173,7 @@ class CLI(OTPMixin, SeleniumCLI):
         client = Client(args.client_id, rtoken)
         client.refresh_token()
         return client
-    
+
     def handle(self, args):
         client = self.get_client(args)
 
@@ -222,7 +218,9 @@ class CLI(OTPMixin, SeleniumCLI):
             hass_data["attributes"]["next_vest"] = '-'
             hass_data["attributes"]["next_vest_amt"] = 0
         else:
-            hass_data["attributes"]["next_vest"] = datetime.strftime(datetime.strptime(date, '%Y-%m-%d') + timedelta(days=46), '%Y-%m-%d')
+            hass_data["attributes"]["next_vest"] = datetime.strftime(
+                datetime.strptime(date, '%Y-%m-%d') + timedelta(days=46), '%Y-%m-%d'
+            )
             hass_data["attributes"]["next_vest_amt"] = amount
         self.pprint(hass_data)
         return hass_data

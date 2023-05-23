@@ -22,8 +22,11 @@ def query(query, variables={}):
 
 
 def usd_rate():
-    with urllib.request.urlopen('https://api.coingecko.com/api/v3/simple/price?ids=terrausd&vs_currencies=usd') as response:
+    with urllib.request.urlopen(
+        'https://api.coingecko.com/api/v3/simple/price?ids=terrausd&vs_currencies=usd'
+    ) as response:
         return json.loads(response.read())['terrausd']['usd']
+
 
 def build_parser():
     parser = argparse.ArgumentParser()
@@ -47,7 +50,7 @@ def main(argv=None):
 
     last_block = bh['LastSyncedHeight'] + 1
 
-    query_msg_market = {'epoch_state' : {'block_height': last_block}}
+    query_msg_market = {'epoch_state': {'block_height': last_block}}
     query_msg_balance = {'balance': {'address': args.your_wallet}}
 
     info = query(
@@ -81,7 +84,7 @@ def main(argv=None):
             'walletAddress': args.your_wallet,
             'queryMsg1': json.dumps(query_msg_market),
             'queryMsg2': json.dumps(query_msg_balance),
-        }
+        },
     )
 
     rate = json.loads(info['moneyMarketEpochState']['Result'])['exchange_rate']
@@ -102,7 +105,7 @@ def main(argv=None):
                     'rate': rate,
                     'usd': usd_balance,
                     'unit_of_measurement': 'UST',
-                }
+                },
             },
         )
 

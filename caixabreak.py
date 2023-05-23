@@ -1,6 +1,7 @@
 import argparse
 import requests
 
+
 class ClientError(Exception):
     """errors raised by client validations"""
 
@@ -10,13 +11,15 @@ class Client(requests.Session):
 
     def __init__(self):
         super().__init__()
-        self.headers.update({
-            'User-Agent': 'Dalvik/2.1.0 (Linux; U; Android 10; Android SDK built for x86_64 Build/QSR1.210802.001)',
-            'X-CGD-APP-Version': '2.21.4',
-            'X-CGD-APP-Name': 'APP_PREPAGOS',
-            'X-1CGD-APP-LANGUAGE': 'pt-PT',
-            'X-CGD-APP-Device': 'as5',
-        })
+        self.headers.update(
+            {
+                'User-Agent': 'Dalvik/2.1.0 (Linux; U; Android 10; Android SDK built for x86_64 Build/QSR1.210802.001)',
+                'X-CGD-APP-Version': '2.21.4',
+                'X-CGD-APP-Name': 'APP_PREPAGOS',
+                'X-1CGD-APP-LANGUAGE': 'pt-PT',
+                'X-CGD-APP-Device': 'as5',
+            }
+        )
         self._session_id = None
         self._config = None
 
@@ -27,15 +30,13 @@ class Client(requests.Session):
     def login(self, user, auth):
         r = self.post(
             'pceApi/rest/v1/system/security/authentications/basic',
-            headers={
-                'Authorization': f'Basic {auth}'
-            },
+            headers={'Authorization': f'Basic {auth}'},
             json={},
             params={'u': user, 'includeAccountsInResponse': 'false'},
         )
         r.raise_for_status()
         return r.json()
-    
+
     def get_balance(self):
         r = self.get('pceApi/rest/v1/business/cards/ppp/prepaid/cards')
         r.raise_for_status()
@@ -55,24 +56,26 @@ def main(argv=None):
     client = Client()
     client.login(args.username, args.auth)
     data = client.get_balance()
-    
+
     assert len(data['cards']) == 1
 
     hass_data = {
         'state': data['cards'][0]['availableCredit'] / 100,
         'attributes': {
             'unit_of_measurement': 'EUR',
-        }
+        },
     }
 
     print(f"Balance: {hass_data['state']}")
 
     if args.hass:
-        print(requests.post(
-            args.hass[0],
-            json=hass_data,
-            headers={'Authorization': f'Bearer {args.hass[1]}'},
-        ))
+        print(
+            requests.post(
+                args.hass[0],
+                json=hass_data,
+                headers={'Authorization': f'Bearer {args.hass[1]}'},
+            )
+        )
 
 
 if __name__ == '__main__':

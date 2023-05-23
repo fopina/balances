@@ -12,9 +12,9 @@ class Client(requests.Session):
 
     def __init__(self):
         super().__init__()
-        self.headers.update({
-            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:100.0) Gecko/20100101 Firefox/100.0'
-        })
+        self.headers.update(
+            {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:100.0) Gecko/20100101 Firefox/100.0'}
+        )
         self._session_id = None
         self._config = None
 
@@ -50,7 +50,7 @@ class Client(requests.Session):
         else:
             raise ClientError('unexpected status', d)
         self._session_id = d['sessionId']
-    
+
     def get_config(self):
         r = self.get('pa/secure/client', params={'sessionId': self._session_id})
         r.raise_for_status()
@@ -58,7 +58,10 @@ class Client(requests.Session):
         return self._config
 
     def get_portfolio(self):
-        r = self.get(f'trading/secure/v5/update/{self._config["intAccount"]};jsessionid={self._session_id}', params={'portfolio': 0})
+        r = self.get(
+            f'trading/secure/v5/update/{self._config["intAccount"]};jsessionid={self._session_id}',
+            params={'portfolio': 0},
+        )
         r.raise_for_status()
         portfolio = []
         for j in r.json()['portfolio']['value']:
@@ -69,9 +72,13 @@ class Client(requests.Session):
                 data[jj['name']] = jj.get('value')
             portfolio.append(data)
         return portfolio
-    
+
     def product_search(self, ids):
-        r = self.post(f'product_search/secure/v5/products/info?intAccount={self._config["intAccount"]}', params={'sessionId': self._session_id}, json=ids)
+        r = self.post(
+            f'product_search/secure/v5/products/info?intAccount={self._config["intAccount"]}',
+            params={'sessionId': self._session_id},
+            json=ids,
+        )
         r.raise_for_status()
         return r.json()['data']
 
@@ -115,16 +122,8 @@ class VWDClient(Client):
         r = self.get(self._session_id)
         r.raise_for_status()
         d = r.json()
-        req_key_map = {
-            x['v'][1]: x['v'][0]
-            for x in d
-            if x['m'] == 'a_req'
-        }
-        r = {
-            req_key_map[x['v'][0]]: x['v'][1]
-            for x in d
-            if x['m'] == 'un'
-        }
+        req_key_map = {x['v'][1]: x['v'][0] for x in d if x['m'] == 'a_req'}
+        r = {req_key_map[x['v'][0]]: x['v'][1] for x in d if x['m'] == 'un'}
         return r
 
 
@@ -184,7 +183,7 @@ class CLI(otp.OTPMixin, BasicCLI):
             'state': 0,
             'attributes': {
                 'unit_of_measurement': 'EUR',
-            }
+            },
         }
 
         for k, v in products.items():

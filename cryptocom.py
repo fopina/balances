@@ -63,7 +63,7 @@ class CLI(BasicCLI):
     def extend_parser(self, parser):
         parser.add_argument('track_id')
         parser.add_argument('token')
-    
+
     def handle(self, args):
         client = Client(args.track_id, args.token)
         mclient = MissionClient(args.track_id, args.token)

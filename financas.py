@@ -19,9 +19,7 @@ class ClientError(Exception):
 class Client(requests.Session):
     def __init__(self):
         super().__init__()
-        self.headers.update({
-            'User-Agent': 'Firefox'
-        })
+        self.headers.update({'User-Agent': 'Firefox'})
         retry_strategy = Retry(
             total=3,
             status_forcelist=[429, 500, 502, 503, 504],
@@ -48,7 +46,7 @@ class Client(requests.Session):
                 'path': 'painelAdquirente.action',
                 '_csrf': m[0],
                 'selectedAuthMethod': 'N',
-            }
+            },
         )
         r.raise_for_status()
         if '<div class="error-message">' in r.text:
@@ -63,24 +61,16 @@ class Client(requests.Session):
         for _try in range(10):
             # flaky faturas.portaldasfinancas.gov.pt returning 404 sometimes
             # retry a few times
-            r = self.post(
-                'https://faturas.portaldasfinancas.gov.pt/painelAdquirente.action',
-                data={
-                    x: y
-                    for x, y in m
-                }
-            )
+            r = self.post('https://faturas.portaldasfinancas.gov.pt/painelAdquirente.action', data={x: y for x, y in m})
             if r.status_code != 404:
                 break
             logger.error('Failed try %d', _try)
             time.sleep(0.5)
         return self._parse_dashboard(r)
-    
+
     def dashboard_stats(self):
-        return self._parse_dashboard(
-            self.get('https://faturas.portaldasfinancas.gov.pt/painelAdquirente.action')
-        )
-    
+        return self._parse_dashboard(self.get('https://faturas.portaldasfinancas.gov.pt/painelAdquirente.action'))
+
     def pending_invoices(self, year=None):
         n = datetime.now()
         tc = int(n.timestamp() * 1000)
@@ -95,7 +85,7 @@ class Client(requests.Session):
                 'estadoDocumentoFilter': 'P',
                 'ambitoAquisicaoFilter': 'TODOS',
                 '_': tc,
-            }
+            },
         )
         r.raise_for_status()
         data = r.json()
@@ -103,7 +93,7 @@ class Client(requests.Session):
             raise ClientError(html.unescape('\n'.join(data['messages']['error'])))
 
         return r.json()['totalElementos']
-    
+
     def _parse_dashboard(self, response):
         response.raise_for_status()
         m = re.findall(
@@ -132,7 +122,7 @@ class CLI(BasicCLI):
         parser.add_argument('-o', '--otp', help='OTP code')
         parser.add_argument('-s', '--otp-secret', help='OTP secret (to generate code)')
         parser.add_argument('-p', '--pin', help='use device login with this pin code (password should be device id)')
-    
+
     def handle(self, args):
         # sometimes portal fails to load dashboard with a maintenance message such as:
         # '<strong>Por motivos de ordem t&eacute;cnica n&atilde;o nos &eacute; poss&iacute;vel responder ao seu pedido.'
@@ -156,7 +146,7 @@ class CLI(BasicCLI):
             'attributes': {
                 'unit_of_measurement': 'EUR',
                 'pending': pending,
-            }
+            },
         }
 
         for k, v in stats.items():

@@ -5,7 +5,9 @@ DEFAULT = object()
 
 
 class MyDriver(webdriver.Chrome):
-    def __init__(self, executable_path="chromedriver", docker=False, remote_debug_port=None, user_agent=DEFAULT, **kwargs):
+    def __init__(
+        self, executable_path="chromedriver", docker=False, remote_debug_port=None, user_agent=DEFAULT, **kwargs
+    ):
         options = webdriver.ChromeOptions()
         if Path("/Applications/Chromium.app/Contents/MacOS/Chromium").exists():
             # for dev environment
@@ -28,7 +30,9 @@ class MyDriver(webdriver.Chrome):
             # set UA by default so that `headlesschrome` is not sent...
             self.execute_cdp_cmd(
                 "Network.setUserAgentOverride",
-                {"userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36"},
+                {
+                    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36"
+                },
             )
         elif user_agent is not None:
             self.execute_cdp_cmd(

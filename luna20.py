@@ -9,9 +9,11 @@ class Client(requests.Session):
 
     def __init__(self):
         super().__init__()
-        self.headers.update({
-            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:100.0) Gecko/20100101 Firefox/100.0',
-        })
+        self.headers.update(
+            {
+                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:100.0) Gecko/20100101 Firefox/100.0',
+            }
+        )
 
     def request(self, method, url, *args, **kwargs):
         url = f"{self.URL}{url.lstrip('/')}"
@@ -31,7 +33,7 @@ class Client(requests.Session):
 class CLI(CryptoFXMixin, BasicCLI):
     def extend_parser(self, parser):
         parser.add_argument('wallet')
-    
+
     def handle(self, args):
         hass_data = {
             'state': 0,
@@ -41,7 +43,7 @@ class CLI(CryptoFXMixin, BasicCLI):
                 'vested': 0,
                 'vesting': 0,
                 'unit_of_measurement': 'LUNA',
-            }
+            },
         }
 
         c = Client()

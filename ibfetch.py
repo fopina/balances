@@ -112,7 +112,7 @@ class CLI(SeleniumCLI):
 
         client = Client(cookies)
         return client
-    
+
     def handle(self, args):
         client = self.get_client(args)
         r = client.get('portfolio/accounts').json()

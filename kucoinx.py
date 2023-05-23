@@ -9,7 +9,7 @@ class CLI(BasicCLI):
         parser.add_argument('secret')
         parser.add_argument('passphrase')
         parser.add_argument('--exclude-zeros', action='store_true', help='Do not report accounts/tokens with 0 balance')
-    
+
     def handle(self, args):
         prices = MarketData().get_fiat_price()
         client = User(args.key, args.secret, args.passphrase)
@@ -19,7 +19,7 @@ class CLI(BasicCLI):
             'state': 0,
             'attributes': {
                 'unit_of_measurement': 'USD',
-            }
+            },
         }
         accum = {}
 
@@ -38,7 +38,7 @@ class CLI(BasicCLI):
                     accum[kn] = float(accum.get(kn, 0)) + kv
                     price = float(prices.get(kn, 0))
                     accum_sub[sub['subName']] = accum_sub.get(sub['subName'], 0) + price * kv
-        
+
         for k, v in accum.items():
             price = float(prices.get(k, 0))
             k = k.lower()
