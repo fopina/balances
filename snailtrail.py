@@ -104,12 +104,13 @@ class CLI(fx.CryptoFXMixin, BasicCLI):
             assert args.hass_token is not None
             assert len(args.hass) == len(args.wallet)
 
-        try:
-            rates = self.get_crypto_fx_rate(['snail-trail', 'avalanche-2'])
-        except HTTPError:
-            # fall back to coinmarketcap
-            rates = self.get_crypto_fx_rate_coinmarketcap(['avalanche', 'snail-trail'])
-            rates['avalanche-2'] = rates['avalanche']
+        rates = self.get_crypto_fx_rate(
+            ['snail-trail', 'avalanche-2'],
+            coinmarketcap_slugs={
+                'snail-trail': 'snail-trail',
+                'avalanche-2': 'avalanche',
+            },
+        )
 
         r = []
         for wallet in args.wallet:

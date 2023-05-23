@@ -2,11 +2,34 @@ import requests
 
 
 class CryptoFXMixin:
-    def get_crypto_fx_rate(self, tokens, currencies=['usd']):
+    def get_crypto_fx_rate(self, tokens, currencies=['usd'], coinmarketcap_slugs=None):
         """
         Get latest exchange rates for these tokens
+
+        Uses coingecko API by default but will fallback to coinmarketcap API if first is available (and coinmarketcap_slugs are specified)
         """
-        return self.get_crypto_fx_rate_coingecko(tokens, currencies=currencies)
+        try:
+            return self.get_crypto_fx_rate_coingecko(tokens, currencies=currencies)
+        except requests.exceptions.HTTPError:
+            if coinmarketcap_slugs is None:
+                raise
+            if isinstance(tokens, (list, tuple)):
+                if not isinstance(coinmarketcap_slugs, dict):
+                    # if multiple tokens, coinmarketcap_slugs should be a dictionary to map coingecko token with coinmarketcap slug (for consistent result keys)
+                    raise Exception('`coinmarketcap_slugs` must be a dicitionary when multiple tokens are used')
+                slugs = list(coinmarketcap_slugs.values())
+            else:
+                if not isinstance(coinmarketcap_slugs, str):
+                    raise Exception('`coinmarketcap_slugs` must be a str when a single token is used')
+                slugs = [coinmarketcap_slugs]
+
+            r = self.get_crypto_fx_rate_coinmarketcap(slugs)
+            if len(slugs) > 1:
+                # re-map for result consistency
+                for k, v in coinmarketcap_slugs.items():
+                    if k != v:
+                        r[k] = r[v]
+            return r
 
     def get_crypto_fx_rate_coingecko(self, tokens, currencies=['usd']):
         """

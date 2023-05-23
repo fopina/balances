@@ -54,7 +54,7 @@ class CLI(CryptoFXMixin, BasicCLI):
             hass_data['attributes']['vested'] += float(d['amount']) / 1000000
 
         hass_data['state'] = hass_data['attributes']['vested'] + hass_data['attributes']['vesting']
-        hass_data['attributes']['rate'] = self.get_crypto_fx_rate('terra-luna-2')
+        hass_data['attributes']['rate'] = self.get_crypto_fx_rate('terra-luna-2', coinmarketcap_slugs='terra-luna-v2')
         hass_data['attributes']['usd'] = hass_data['state'] * hass_data['attributes']['rate']
         self.pprint(hass_data)
         return hass_data
