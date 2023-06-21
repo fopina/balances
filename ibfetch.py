@@ -42,15 +42,15 @@ def login_and_token(args):
     driver.implicitly_wait(20)
     try:
         driver.get("https://www.interactivebrokers.co.uk/sso/Login?RL=1")
-        el = driver.find_element(By.ID, "user_name")
+        el = driver.find_element(By.NAME, "username")
         # accept privacy cookies
         driver.add_cookie({"name": "IB_PRIV_PREFS", "value": "0%7C0%7C0"})
         driver.get("https://www.interactivebrokers.co.uk/sso/Login?RL=1")
-        el = driver.find_element(By.ID, "user_name")
+        el = driver.find_element(By.NAME, "username")
         time.sleep(1)
         logger.info("found login form")
         el.send_keys(args.username)
-        el = driver.find_element(By.ID, "password")
+        el = driver.find_element(By.NAME, "password")
         el.send_keys(args.password)
         el.submit()
 
