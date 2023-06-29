@@ -71,27 +71,27 @@ class Client:
 
     @property
     def race_contract(self):
-        return self.web3.eth.contract(address=self.web3.toChecksumAddress(CONTRACT_RACE), abi=ABI_RACE)
+        return self.web3.eth.contract(address=self.web3.to_checksum_address(CONTRACT_RACE), abi=ABI_RACE)
 
     @property
     def slime_contract(self):
-        return self.web3.eth.contract(address=self.web3.toChecksumAddress(CONTRACT_SLIME), abi=ABI_ACCOUNT)
+        return self.web3.eth.contract(address=self.web3.to_checksum_address(CONTRACT_SLIME), abi=ABI_ACCOUNT)
 
     @property
     def snailnft_contract(self):
-        return self.web3.eth.contract(address=self.web3.toChecksumAddress(CONTRACT_SNAILNFT), abi=ABI_ACCOUNT)
+        return self.web3.eth.contract(address=self.web3.to_checksum_address(CONTRACT_SNAILNFT), abi=ABI_ACCOUNT)
 
     @property
     def wavax_contract(self):
-        return self.web3.eth.contract(address=self.web3.toChecksumAddress(CONTRACT_WAVAX), abi=ABI_ACCOUNT)
+        return self.web3.eth.contract(address=self.web3.to_checksum_address(CONTRACT_WAVAX), abi=ABI_ACCOUNT)
 
     @property
     def mega_race_contract(self):
-        return self.web3.eth.contract(address=self.web3.toChecksumAddress(CONTRACT_MEGA_RACE), abi=ABI_RACE)
+        return self.web3.eth.contract(address=self.web3.to_checksum_address(CONTRACT_MEGA_RACE), abi=ABI_RACE)
 
     @property
     def multicall_contract(self):
-        return self.web3.eth.contract(address=self.web3.toChecksumAddress(CONTRACT_MULTICALL), abi=ABI_MULTICALL)
+        return self.web3.eth.contract(address=self.web3.to_checksum_address(CONTRACT_MULTICALL), abi=ABI_MULTICALL)
 
     def claimable_slime(self):
         return self.race_contract.functions.claimableRewards().call({'from': self.wallet}) / DECIMALS
