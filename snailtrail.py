@@ -51,6 +51,13 @@ ABI_MULTICALL = [
         'stateMutability': 'payable',
         'type': 'function',
     },
+    {
+        'inputs': [{'internalType': 'address', 'name': 'addr', 'type': 'address'}],
+        'name': 'getEthBalance',
+        'outputs': [{'internalType': 'uint256', 'name': 'balance', 'type': 'uint256'}],
+        'stateMutability': 'view',
+        'type': 'function',
+    },
 ]
 
 DECIMALS = 1000000000000000000
@@ -111,14 +118,18 @@ class Client:
                 calls.append(
                     (contract.address, contract.encodeABI('balanceOf', args=(w,))),
                 )
+            calls.append(
+                (self.multicall_contract.address, self.multicall_contract.encodeABI('getEthBalance', args=(w,)))
+            )
         x = self.multicall_contract.functions.aggregate(calls).call()
         w_ind = 0
         results = {}
-        for y in range(0, len(x[1]), 3):
+        for y in range(0, len(x[1]), 4):
             results[wallets[w_ind]] = [
                 self.web3.to_int(x[1][y]),
                 self.web3.to_int(x[1][y + 1]) / DECIMALS,
                 self.web3.to_int(x[1][y + 2]) / DECIMALS,
+                self.web3.to_int(x[1][y + 3]) / DECIMALS,
             ]
             w_ind += 1
         return results
@@ -162,7 +173,7 @@ class CLI(fx.CryptoFXMixin, BasicCLI):
                 },
             }
 
-            hass_data['attributes']['avax'] = client.get_balance()
+            hass_data['attributes']['avax'] = multicall_data[wallet][3]
             hass_data['attributes']['unclaimed'] = client.claimable_slime()
             hass_data['attributes']['claimed'] = multicall_data[wallet][2]
             hass_data['attributes']['unclaimedw'] = client.claimable_wavax()
