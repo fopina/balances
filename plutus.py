@@ -84,14 +84,6 @@ class Client(requests.Session):
             },
         ).json()
 
-    def card_balance(self):
-        try:
-            r = self.get("https://api.plutus.it/platform/consumer/balance")
-        except requests.exceptions.HTTPError as e:
-            print(e.response.text)
-            raise
-        return r.json()
-
     def transaction_list(self):
         r = self.get("https://api.plutus.it/platform/transactions/pluton")
         return r.json()
@@ -199,11 +191,6 @@ class CLI(OTPMixin, SeleniumCLI):
         fiat = client.fiat_balance()["data"]["fiat_balance"][0]["amount"]
         hass_data["attributes"]["fiat_val"] = fiat
         hass_data["state"] += fiat
-
-        card = client.card_balance()
-        hass_data["attributes"]["card_val"] = card["AccountBalance"] / 100
-        hass_data["attributes"]["cardavail_val"] = card["AvailableBalance"] / 100
-        hass_data["state"] += hass_data["attributes"]["card_val"]
 
         amount = 0
         date = None
