@@ -3,36 +3,51 @@ OBJECTSGCC = snailtrail
 OBJECTSCHROMIUM = plutus ibfetch
 BASE_IMAGE_NAME = ghcr.io/fopina/balances
 PLATFORMS = linux/amd64,linux/arm/v7,linux/arm64
+TARGETBASE = alpine
 ACTION = push
+PYTHON_VERSION = 3.9
 DOCKER_EXTRA =
 SUFFIX = 
 
+base: base-alpine base-gcc base-chromium
+
+base-gcc:
+	make templ-base TARGETBASE=gcc
+
+base-chromium:
+	make templ-base TARGETBASE=chromium
+
+base-alpine:
+	make templ-base TARGETBASE=alpine
+
+templ-base:
+	docker buildx build \
+				  --pull \
+				  --platform $(PLATFORMS) \
+				  -t $(BASE_IMAGE_NAME):base-$(PYTHON_VERSION)-$(TARGETBASE)$(SUFFIX)-$(shell git log --oneline docker | wc -l | tr -d ' ') \
+				  -t $(BASE_IMAGE_NAME):base-$(PYTHON_VERSION)-$(TARGETBASE)$(SUFFIX) \
+				  $(DOCKER_EXTRA) \
+				  -f docker/Dockerfile.base \
+				  --target $(TARGETBASE) \
+				  --$(ACTION) .
+
 templ:
-		docker buildx build \
-	              --platform $(PLATFORMS) \
-				  -t $(BASE_IMAGE_NAME):$(SERVICE)$(SUFFIX)-$(shell git log --oneline $(SERVICE).py | wc -l | tr -d ' ') \
+	docker buildx build \
+				  --platform $(PLATFORMS) \
+				  --pull \
+				  -t $(BASE_IMAGE_NAME):$(SERVICE)$(SUFFIX)-$(shell git log --oneline $(SERVICE).py docker | wc -l | tr -d ' ') \
 				  -t $(BASE_IMAGE_NAME):$(SERVICE)$(SUFFIX) \
-				  --build-arg ENTRY=$(SERVICE) $(DOCKER_EXTRA) \
+				  --build-arg TARGETBASE=$(PYTHON_VERSION)-$(TARGETBASE) \
+				  --build-arg ENTRY=$(SERVICE) \
+				  $(DOCKER_EXTRA) \
 				  -f docker/Dockerfile \
 				  --$(ACTION) .
 
 templ-gcc:
-		docker buildx build \
-	              --platform $(PLATFORMS) \
-				  -t $(BASE_IMAGE_NAME):$(SERVICE)$(SUFFIX)-$(shell git log --oneline $(SERVICE).py | wc -l | tr -d ' ') \
-				  -t $(BASE_IMAGE_NAME):$(SERVICE)$(SUFFIX) \
-				  --build-arg ENTRY=$(SERVICE) --build-arg TARGETBASE=gcc $(DOCKER_EXTRA) \
-				  -f docker/Dockerfile \
-				  --$(ACTION) .
+		make templ TARGETBASE=gcc
 
 templ-chromium:
-		docker buildx build \
-	              --platform $(PLATFORMS) \
-				  -t $(BASE_IMAGE_NAME):$(SERVICE)$(SUFFIX)-$(shell git log --oneline $(SERVICE).py | wc -l | tr -d ' ') \
-				  -t $(BASE_IMAGE_NAME):$(SERVICE)$(SUFFIX) \
-				  --build-arg ENTRY=$(SERVICE) --build-arg TARGETBASE=chromium $(DOCKER_EXTRA) \
-				  -f docker/Dockerfile \
-				  --$(ACTION) .
+		make templ TARGETBASE=chromium
 
 # FIXME: SERVICE=$@ does not work as variable declaration...
 $(OBJECTS):
