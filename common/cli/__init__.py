@@ -15,6 +15,7 @@ class BasicCLI:
         return parser
 
     def default_parser(self, parser):
+        parser.add_argument('--insecure', action='store_true', help='Skip SSL validation')
         parser.add_argument('--hass', nargs=2, metavar=('ENTITY_URL', 'TOKEN'), help='push to HASS')
 
     def handle(self, args):

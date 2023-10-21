@@ -1,4 +1,4 @@
-OBJECTS = anchor celsius degiro kucoinx financas caixabreak luna20 cryptocom
+OBJECTS = anchor celsius degiro kucoinx financas caixabreak luna20 cryptocom aforronet
 OBJECTSGCC = snailtrail
 OBJECTSCHROMIUM = plutus ibfetch
 BASE_IMAGE_NAME = ghcr.io/fopina/balances
