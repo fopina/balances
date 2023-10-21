@@ -66,3 +66,5 @@ $(OBJECTSCHROMIUM):
 	SERVICE=$@ make templ-chromium PLATFORMS=linux/amd64 ACTION=load
 $(addprefix push/,$(OBJECTSCHROMIUM)):
 	SERVICE=$(notdir $@) make templ-chromium ACTION=push
+
+all: $(OBJECTS) $(OBJECTSGCC) $(OBJECTSCHROMIUM)
