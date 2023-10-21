@@ -2,11 +2,11 @@ ARG TARGETBASE=ghcr.io/fopina/balances:base-3.9-alpine
 FROM ${TARGETBASE}
 
 ARG ENTRY="anchor"
-RUN --mount=type=bind,source=requirements/requirements_common.txt,target=/requirements/requirements_common.txt \
-    --mount=type=bind,source=requirements/requirements_${ENTRY}.txt,target=/requirements/requirements.txt \
+RUN --mount=type=bind,source=requirements/,target=/requirements/ \
     --mount=type=cache,target=/root/.cache/pip \
     pip install -r /requirements/requirements_common.txt \
-                -r /requirements/requirements.txt
+ && [ ! -e /requirements/requirements_${ENTRY}.txt ] || pip install -r /requirements/requirements_${ENTRY}.txt
+
 COPY common /common
 COPY ${ENTRY}.py /entry.py
 
