@@ -24,6 +24,8 @@ templ-base:
 	docker buildx build \
 				  --pull \
 				  --platform $(PLATFORMS) \
+				  --build-arg BASE=python:$(PYTHON_VERSION)-alpine \
+				  --build-arg BASESLIM=python:$(PYTHON_VERSION)-slim \
 				  -t $(BASE_IMAGE_NAME):base-$(PYTHON_VERSION)-$(TARGETBASE)$(SUFFIX)-$(shell git log --oneline docker | wc -l | tr -d ' ') \
 				  -t $(BASE_IMAGE_NAME):base-$(PYTHON_VERSION)-$(TARGETBASE)$(SUFFIX) \
 				  $(DOCKER_EXTRA) \
@@ -37,7 +39,7 @@ templ:
 				  --pull \
 				  -t $(BASE_IMAGE_NAME):$(SERVICE)$(SUFFIX)-$(shell git log --oneline $(SERVICE).py docker | wc -l | tr -d ' ') \
 				  -t $(BASE_IMAGE_NAME):$(SERVICE)$(SUFFIX) \
-				  --build-arg TARGETBASE=$(PYTHON_VERSION)-$(TARGETBASE) \
+				  --build-arg TARGETBASE=ghcr.io/fopina/balances:base-$(PYTHON_VERSION)-$(TARGETBASE) \
 				  --build-arg ENTRY=$(SERVICE) \
 				  $(DOCKER_EXTRA) \
 				  -f docker/Dockerfile \

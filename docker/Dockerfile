@@ -1,5 +1,5 @@
-ARG TARGETBASE=3.9-alpine
-FROM ghcr.io/fopina/balances:base-${TARGETBASE}
+ARG TARGETBASE=ghcr.io/fopina/balances:base-3.9-alpine
+FROM ${TARGETBASE}
 
 ARG ENTRY="anchor"
 RUN --mount=type=bind,source=requirements/requirements_common.txt,target=/requirements/requirements_common.txt \
