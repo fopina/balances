@@ -131,7 +131,9 @@ class CLI(BasicCLI):
             hass_data['attributes'][f'{_n}_unitprice'] = sub[2]
             hass_data['attributes'][f'{_n}_units'] = sub[3]
             hass_data['attributes'][f'{_n}_value'] = sub[4]
+            hass_data['state'] += sub[4]
             print(f"* {sub[1]}: {sub[0]} {sub[2:]}")
+        print(f"Total: {hass_data['state']}")
         return hass_data
 
 
