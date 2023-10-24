@@ -28,7 +28,7 @@ class BasicCLI:
 
     def push_to_hass(self, data):
         if self.args.hass:
-            hass.push_to_hass(self.args.hass[0], self.args.hass[1], data)
+            hass.push_to_hass(self.args.hass[0], self.args.hass[1], data, verify=not self.args.insecure)
 
     def pprint(self, *args, **kwargs):
         hass.pprint(*args, **kwargs)
