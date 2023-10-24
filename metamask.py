@@ -60,6 +60,7 @@ class CLI(BasicCLI):
         hass_data['state'] = data['value']['marketValue']
 
         self.pprint(hass_data)
+        return hass_data
 
 
 if __name__ == '__main__':
