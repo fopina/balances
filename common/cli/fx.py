@@ -34,6 +34,8 @@ class CryptoFXMixin:
     def get_crypto_fx_rate_coingecko(self, tokens, currencies=['usd']):
         """
         Get latest exchange rates for these tokens from coingecko API
+
+        `tokens` should be an `API id` (visible in the web UI) or a list of those
         """
         single_token = True
         single_currency = True
@@ -74,7 +76,10 @@ class CryptoFXMixin:
             )
             r.raise_for_status()
             data = r.json()
-            all_data[slug] = data['data']['detail']['statistics']['price']
+            try:
+                all_data[slug] = data['data']['detail']['statistics']['price']
+            except KeyError:
+                raise Exception(f'{slug} not found')
 
         if len(slugs) == 1:
             # flatten data
