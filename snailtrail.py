@@ -213,7 +213,7 @@ class CLI(fx.CryptoFXMixin, BasicCLI):
         if self.args.hass:
             for i, v in enumerate(data):
                 hu = self.args.hass[i]
-                hass.push_to_hass(hu, self.args.hass_token, v, verify=not self.args.insecure)
+                hass.push_to_hass(hu, self.args.hass_token, v, verify=not self.args.ignore_ssl)
 
 
 if __name__ == '__main__':
