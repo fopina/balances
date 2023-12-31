@@ -152,11 +152,11 @@ class CLI(fx.CryptoFXMixin, BasicCLI):
             '--hass', nargs='+', help='URL(s) to push the data to HASS - ONE FOR EACH WALLET SPECIFIED, SAME ORDER'
         )
         parser.add_argument('--hass-token', help='Token to push to HASS')
+        parser.add_argument('--insecure', action='store_true', help='Skip SSL validation')
 
     def extend_parser(self, parser):
         parser.add_argument('wallet', nargs='+')
         parser.add_argument('--web3', default='https://api.avax.network/ext/bc/C/rpc', help='WEB3 Provider HTTP')
-        parser.add_argument('-k', '--ignore-ssl', action='store_true', help='Disable TLS verification')
 
     def handle(self, args):
         if args.hass:
@@ -213,7 +213,7 @@ class CLI(fx.CryptoFXMixin, BasicCLI):
         if self.args.hass:
             for i, v in enumerate(data):
                 hu = self.args.hass[i]
-                hass.push_to_hass(hu, self.args.hass_token, v, verify=not self.args.ignore_ssl)
+                hass.push_to_hass(hu, self.args.hass_token, v, verify=not self.args.insecure)
 
 
 if __name__ == '__main__':
