@@ -19,6 +19,20 @@ ABI_RACE = [
         "stateMutability": "view",
         "type": "function",
     },
+    {
+        'inputs': [{'internalType': 'address', 'name': '', 'type': 'address'}],
+        'name': 'dailyRewardTracker',
+        'outputs': [{'internalType': 'uint256', 'name': '', 'type': 'uint256'}],
+        'stateMutability': 'view',
+        'type': 'function',
+    },
+    {
+        'inputs': [{'internalType': 'address', 'name': '', 'type': 'address'}],
+        'name': 'rewardTracker',
+        'outputs': [{'internalType': 'uint256', 'name': '', 'type': 'uint256'}],
+        'stateMutability': 'view',
+        'type': 'function',
+    },
 ]
 ABI_ACCOUNT = [
     {
@@ -100,15 +114,6 @@ class Client:
     def multicall_contract(self):
         return self.web3.eth.contract(address=self.web3.to_checksum_address(CONTRACT_MULTICALL), abi=ABI_MULTICALL)
 
-    def claimable_slime(self):
-        return self.race_contract.functions.claimableRewards().call({'from': self.wallet}) / DECIMALS
-
-    def claimable_wavax(self):
-        return self.mega_race_contract.functions.claimableRewards().call({'from': self.wallet}) / DECIMALS
-
-    def get_balance(self):
-        return self.web3.eth.get_balance(self.wallet) / DECIMALS
-
     def multicall_balances(self, wallets: list[str]):
         calls = []
         # balanceOf: snails, wavax, slime
@@ -121,15 +126,21 @@ class Client:
             calls.append(
                 (self.multicall_contract.address, self.multicall_contract.encodeABI('getEthBalance', args=(w,)))
             )
+            calls.append((self.race_contract.address, self.race_contract.encodeABI('dailyRewardTracker', args=(w,))))
+            calls.append(
+                (self.mega_race_contract.address, self.mega_race_contract.encodeABI('rewardTracker', args=(w,)))
+            )
         x = self.multicall_contract.functions.aggregate(calls).call()
         w_ind = 0
         results = {}
-        for y in range(0, len(x[1]), 4):
+        for y in range(0, len(x[1]), 6):
             results[wallets[w_ind]] = [
                 self.web3.to_int(x[1][y]),
                 self.web3.to_int(x[1][y + 1]) / DECIMALS,
                 self.web3.to_int(x[1][y + 2]) / DECIMALS,
                 self.web3.to_int(x[1][y + 3]) / DECIMALS,
+                self.web3.to_int(x[1][y + 4]) / DECIMALS,
+                self.web3.to_int(x[1][y + 5]) / DECIMALS,
             ]
             w_ind += 1
         return results
@@ -174,9 +185,9 @@ class CLI(fx.CryptoFXMixin, BasicCLI):
             }
 
             hass_data['attributes']['avax'] = multicall_data[wallet][3]
-            hass_data['attributes']['unclaimed'] = client.claimable_slime()
+            hass_data['attributes']['unclaimed'] = multicall_data[wallet][4]
             hass_data['attributes']['claimed'] = multicall_data[wallet][2]
-            hass_data['attributes']['unclaimedw'] = client.claimable_wavax()
+            hass_data['attributes']['unclaimedw'] = multicall_data[wallet][5]
             hass_data['attributes']['wavax'] = multicall_data[wallet][1]
             hass_data['attributes']['snails'] = multicall_data[wallet][0]
             hass_data['attributes']['slime_rate'] = rates['snail-trail']
