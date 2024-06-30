@@ -9,6 +9,7 @@ class SeleniumCLI(BasicCLI):
         return p
 
     def get_webdriver(self, *args, **kwargs):
-        return webdriver.MyDriver(
-            *args, docker=self.args.docker, remote_debug_port=self.args.remote_debugging_port, **kwargs
-        )
+        # return webdriver.MyDriver(
+        #     *args, docker=self.args.docker, remote_debug_port=self.args.remote_debugging_port, **kwargs
+        # )
+        return webdriver.MyRemoteDriver()
