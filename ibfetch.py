@@ -36,39 +36,6 @@ class Client(requests.Session):
         return self.get('sso/validate').json()
 
 
-def login_and_token(args):
-    logger.info("logging in")
-    driver = MyDriver(docker=args.docker)
-    driver.implicitly_wait(20)
-    try:
-        driver.get("https://www.interactivebrokers.co.uk/sso/Login?RL=1")
-        el = driver.find_element(By.NAME, "username")
-        # accept privacy cookies
-        driver.add_cookie({"name": "IB_PRIV_PREFS", "value": "0%7C0%7C0"})
-        driver.get("https://www.interactivebrokers.co.uk/sso/Login?RL=1")
-        el = driver.find_element(By.NAME, "username")
-        time.sleep(1)
-        logger.info("found login form")
-        el.send_keys(args.username)
-        el = driver.find_element(By.NAME, "password")
-        el.send_keys(args.password)
-        el.submit()
-
-        el = driver.find_element(By.CSS_SELECTOR, "a[href='#/portfolio'],div#ERRORMSG[style='']")
-        if el.tag_name == 'div':
-            raise ClientError(el.get_attribute('innerHTML'))
-        time.sleep(1)
-        logger.info("logged in!")
-        refresh_token = driver.execute_script("return document.cookie;")
-    except Exception:
-        if args.screenshot:
-            driver.save_screenshot(str(args.token_file.parent / 'ibfetch-debug.png'))
-        raise
-    finally:
-        driver.quit()
-    return refresh_token
-
-
 class CLI(SeleniumCLI):
     def extend_parser(self, parser):
         parser.add_argument("username")
@@ -95,7 +62,7 @@ class CLI(SeleniumCLI):
         tries = 0
         while True:
             try:
-                cookies = login_and_token(args)
+                cookies = self.login_and_token()
                 print(f'IBFETCH: LOGIN SUCCESS ON TRY {tries}')
                 break
             except ClientError:
@@ -112,6 +79,38 @@ class CLI(SeleniumCLI):
 
         client = Client(cookies)
         return client
+
+    def login_and_token(self):
+        logger.info("logging in")
+        driver = self.get_webdriver()
+        driver.implicitly_wait(20)
+        try:
+            driver.get("https://www.interactivebrokers.co.uk/sso/Login?RL=1")
+            el = driver.find_element(By.NAME, "username")
+            # accept privacy cookies
+            driver.add_cookie({"name": "IB_PRIV_PREFS", "value": "0%7C0%7C0"})
+            driver.get("https://www.interactivebrokers.co.uk/sso/Login?RL=1")
+            el = driver.find_element(By.NAME, "username")
+            time.sleep(1)
+            logger.info("found login form")
+            el.send_keys(self.args.username)
+            el = driver.find_element(By.NAME, "password")
+            el.send_keys(self.args.password)
+            el.submit()
+
+            el = driver.find_element(By.CSS_SELECTOR, "a[href='#/portfolio'],div#ERRORMSG[style='']")
+            if el.tag_name == 'div':
+                raise ClientError(el.get_attribute('innerHTML'))
+            time.sleep(1)
+            logger.info("logged in!")
+            refresh_token = driver.execute_script("return document.cookie;")
+        except Exception:
+            if self.args.screenshot:
+                driver.save_screenshot(str(self.args.token_file.parent / 'ibfetch-debug.png'))
+            raise
+        finally:
+            driver.quit()
+        return refresh_token
 
     def handle(self, args):
         client = self.get_client(args)
