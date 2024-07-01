@@ -9,6 +9,9 @@ PYTHON_VERSION = 3.9
 DOCKER_EXTRA =
 SUFFIX = 
 
+list:
+	@echo $(OBJECTS) $(OBJECTSGCC) $(OBJECTSCHROMIUM)
+
 base: base-alpine base-gcc base-chromium
 
 base-gcc:

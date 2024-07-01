@@ -1,0 +1,28 @@
+name: test images
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      targets: ${{ steps.matrixTargets.outputs.targets }}
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+      - id: matrixTargets
+        shell: bash
+        run: |
+          echo "targets=$(make | sed -e 's/ /\n/g' | jq -Rnc '{"target":[inputs]}')" >> $GITHUB_OUTPUT          
+  build:
+    needs: setup
+    runs-on: ubuntu-latest
+    strategy:
+      matrix: ${{ fromJson(needs.setup.outputs.targets) }}
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+      - run: make ${{matrix.target}}

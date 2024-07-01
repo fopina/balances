@@ -1,0 +1,44 @@
+name: publish images
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      targets: ${{ steps.matrixTargets.outputs.targets }}
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+      - id: matrixTargets
+        shell: bash
+        run: |
+          echo "targets=$(make | sed -e 's/ /\n/g' | jq -Rnc '{"target":[inputs]}')" >> $GITHUB_OUTPUT          
+  build:
+    needs: setup
+    runs-on: ubuntu-latest
+    strategy:
+      matrix: ${{ fromJson(needs.setup.outputs.targets) }}
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+    
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - run: make push/${{matrix.target}}
