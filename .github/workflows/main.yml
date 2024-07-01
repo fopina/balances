@@ -27,6 +27,8 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
     
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -41,4 +43,4 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - run: make push/${{matrix.target}}
+      - run: make ${{matrix.target}}

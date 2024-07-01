@@ -6,26 +6,26 @@ BASE_IMAGE_NAME := ghcr.io/fopina/balances
 PLATFORMS := linux/amd64,linux/arm64
 TEST_PLATFORM = $(shell docker system info --format '{{.OSType}}/{{.Architecture}}')
 TARGETBASE = alpine
-ACTION = load
+ACTION = push
 PYTHON_VERSION = 3.9
 DOCKER_EXTRA =
 SUFFIX = 
 
-.PHONY: list base base-gcc base-chromium base-alpine templ-base templ templ-gcc templ-chromium $(OBJECTSALL) $(addprefix push/,$(OBJECTSALL))
+.PHONY: list base base-gcc base-chromium base-alpine templ-base templ templ-gcc templ-chromium $(OBJECTSALL) $(addprefix test/,$(OBJECTSALL))
 
 list:
-	@echo $(OBJECTSALL)
+	@echo $(OBJECTSALL) $(addprefix lite/,$(OBJECTSCHROMIUM))
 
 base: base-alpine base-gcc base-chromium
 
 base-gcc:
-	make templ-base TARGETBASE=gcc
+	$(MAKE) templ-base TARGETBASE=gcc
 
 base-chromium:
-	make templ-base TARGETBASE=chromium
+	$(MAKE) templ-base TARGETBASE=chromium
 
 base-alpine:
-	make templ-base TARGETBASE=alpine
+	$(MAKE) templ-base TARGETBASE=alpine
 
 templ-base:
 	docker buildx build \
@@ -53,22 +53,27 @@ templ:
 				  --$(ACTION) .
 
 templ-gcc:
-		make templ TARGETBASE=gcc
+	$(MAKE) templ TARGETBASE=gcc
 
 templ-chromium:
-		make templ TARGETBASE=chromium
+	$(MAKE) templ TARGETBASE=chromium
 
-# FIXME: SERVICE=$@ does not work as variable declaration...
 $(OBJECTS):
-	SERVICE=$@ make templ PLATFORMS=$(TEST_PLATFORM)
+	$(MAKE) templ SERVICE=$@
 
 $(OBJECTSGCC):
-	SERVICE=$@ make templ-gcc PLATFORMS=$(TEST_PLATFORM)
+	$(MAKE) templ-gcc SERVICE=$@
 
 $(OBJECTSCHROMIUM):
-	SERVICE=$@ make templ-chromium PLATFORMS=$(TEST_PLATFORM)
+	$(MAKE) templ-chromium SERVICE=$@
 
-$(addprefix push/,$(OBJECTSALL)):
-	make $(notdir $@) ACTION=push
+$(addprefix lite/,$(OBJECTSCHROMIUM)):
+	$(MAKE) templ SERVICE=$(notdir $@)
+
+$(addprefix test/lite/,$(OBJECTSCHROMIUM)):
+	$(MAKE) lite/$(notdir $@) ACTION=load PLATFORMS=$(TEST_PLATFORM)
+
+$(addprefix test/,$(OBJECTSALL)):
+	$(MAKE) $(notdir $@) ACTION=load PLATFORMS=$(TEST_PLATFORM)
 
 all: $(OBJECTSALL)
