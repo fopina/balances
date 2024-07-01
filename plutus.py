@@ -89,34 +89,6 @@ class Client(requests.Session):
         return r.json()
 
 
-def login_and_token(username, password, otp=None, docker=False):
-    logger.info("logging in")
-    driver = MyDriver(docker=docker)
-    driver.implicitly_wait(20)
-    driver.get("https://dex.plutus.it/auth/login/")
-    el = driver.find_element("id", "email")
-    logger.info("found login form")
-    el.send_keys(username)
-    # input-error
-    el = driver.find_element("id", "password")
-    el.send_keys(password)
-    el.submit()
-    if otp:
-        el = driver.find_element(By.CSS_SELECTOR, "#code,div.input-error")
-        if el.tag_name == 'div':
-            raise ClientError(el.get_attribute('innerHTML'))
-        logger.info("found OTP form")
-        el.send_keys(otp(as_string=True).decode())
-        el.submit()
-    el = driver.find_element(By.CSS_SELECTOR, "a[href='/dashboard/settings'],div.input-error")
-    if el.tag_name == 'div':
-        raise ClientError(el.get_attribute('innerHTML'))
-    logger.info("logged in!")
-    refresh_token = driver.execute_script("return localStorage.refresh_token;")
-    driver.quit()
-    return refresh_token
-
-
 class CLI(OTPMixin, SeleniumCLI):
     def extend_parser(self, parser):
         parser.add_argument("username")
@@ -143,12 +115,7 @@ class CLI(OTPMixin, SeleniumCLI):
         tries = 0
         while True:
             try:
-                rtoken = login_and_token(
-                    args.username,
-                    args.password,
-                    otp=self.otp_holder(args),
-                    docker=args.docker,
-                )
+                rtoken = self.login_and_token()
                 print(f'PLUTUS: LOGIN SUCCESS ON TRY {tries}')
                 break
             except ClientError:
@@ -165,6 +132,34 @@ class CLI(OTPMixin, SeleniumCLI):
         client = Client(args.client_id, rtoken)
         client.refresh_token()
         return client
+
+    def login_and_token(self):
+        otp=self.otp_holder(self.args),
+        logger.info("logging in")
+        driver = self.get_webdriver()
+        driver.implicitly_wait(20)
+        driver.get("https://dex.plutus.it/auth/login/")
+        el = driver.find_element("id", "email")
+        logger.info("found login form")
+        el.send_keys(self.args.username)
+        # input-error
+        el = driver.find_element("id", "password")
+        el.send_keys(self.args.password)
+        el.submit()
+        if otp:
+            el = driver.find_element(By.CSS_SELECTOR, "#code,div.input-error")
+            if el.tag_name == 'div':
+                raise ClientError(el.get_attribute('innerHTML'))
+            logger.info("found OTP form")
+            el.send_keys(otp(as_string=True).decode())
+            el.submit()
+        el = driver.find_element(By.CSS_SELECTOR, "a[href='/dashboard/settings'],div.input-error")
+        if el.tag_name == 'div':
+            raise ClientError(el.get_attribute('innerHTML'))
+        logger.info("logged in!")
+        refresh_token = driver.execute_script("return localStorage.refresh_token;")
+        driver.quit()
+        return refresh_token
 
     def handle(self, args):
         client = self.get_client(args)
