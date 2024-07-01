@@ -1,16 +1,19 @@
 OBJECTS = anchor celsius degiro kucoinx financas caixabreak luna20 cryptocom aforronet metamask
 OBJECTSGCC = snailtrail
 OBJECTSCHROMIUM = plutus ibfetch
+OBJECTSALL = $(OBJECTS) $(OBJECTSGCC) $(OBJECTSCHROMIUM)
 BASE_IMAGE_NAME = ghcr.io/fopina/balances
 PLATFORMS = linux/amd64,linux/arm64
 TARGETBASE = alpine
-ACTION = push
+ACTION = load
 PYTHON_VERSION = 3.9
 DOCKER_EXTRA =
 SUFFIX = 
 
+.PHONY: list base base-gcc base-chromium base-alpine templ-base templ templ-gcc templ-chromium $(OBJECTSALL) $(addprefix push/,$(OBJECTSALL))
+
 list:
-	@echo $(OBJECTS) $(OBJECTSGCC) $(OBJECTSCHROMIUM)
+	@echo $(OBJECTSALL)
 
 base: base-alpine base-gcc base-chromium
 
@@ -56,18 +59,15 @@ templ-chromium:
 
 # FIXME: SERVICE=$@ does not work as variable declaration...
 $(OBJECTS):
-	SERVICE=$@ make templ PLATFORMS=linux/amd64 ACTION=load
-$(addprefix push/,$(OBJECTS)):
-	SERVICE=$(notdir $@) make templ ACTION=push
+	SERVICE=$@ make templ PLATFORMS=$(shell docker system info --format '{{.OSType}}/{{.Architecture}}')
 
 $(OBJECTSGCC):
-	SERVICE=$@ make templ-gcc PLATFORMS=linux/amd64 ACTION=load
-$(addprefix push/,$(OBJECTSGCC)):
-	SERVICE=$(notdir $@) make templ-gcc ACTION=push
+	SERVICE=$@ make templ-gcc PLATFORMS=$(shell docker system info --format '{{.OSType}}/{{.Architecture}}')
 
 $(OBJECTSCHROMIUM):
-	SERVICE=$@ make templ-chromium PLATFORMS=linux/amd64 ACTION=load
-$(addprefix push/,$(OBJECTSCHROMIUM)):
-	SERVICE=$(notdir $@) make templ-chromium ACTION=push
+	SERVICE=$@ make templ-chromium PLATFORMS=$(shell docker system info --format '{{.OSType}}/{{.Architecture}}')
 
-all: $(OBJECTS) $(OBJECTSGCC) $(OBJECTSCHROMIUM)
+$(addprefix push/,$(OBJECTSALL)):
+	make $(notdir $@) ACTION=push
+
+all: $(OBJECTSALL)
