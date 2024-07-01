@@ -1,1 +1,1 @@
-kucoin_python==1.0.11
+kucoin_python==1.0.20
