@@ -13,8 +13,7 @@ jobs:
     steps:
       - id: dataStep
         run: |
-          TARGETS=$(./createTargets.sh)
-          echo "myoutput=$(jq -cn --argjson environments "$TARGETS" '{target: $environments}')" >> $GITHUB_OUTPUT          
+          echo "myoutput=$(make | sed -e 's/ /\n/g' | jq -Rnc '{"target":[inputs]}')" >> $GITHUB_OUTPUT          
   build:
     needs: setup
     runs-on: ubuntu-latest
