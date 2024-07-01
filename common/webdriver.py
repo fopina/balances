@@ -53,7 +53,7 @@ class MyRemoteDriver(webdriver.Remote, ChromiumHelperMixin):
 
 class MyDriver(webdriver.Chrome, ChromiumHelperMixin):
     def __init__(
-        self, headless=False, remote_debug_port=None, user_agent=DEFAULT_USER_AGENT, **extra_driver_kwargs
+        self, executable_path="chromedriver", headless=False, remote_debug_port=None, user_agent=DEFAULT_USER_AGENT, **extra_driver_kwargs
     ):
         options = self.init_options_in_driver_kwargs(extra_driver_kwargs)
         self.hide_selenium(options)
@@ -66,7 +66,7 @@ class MyDriver(webdriver.Chrome, ChromiumHelperMixin):
             self.go_headless(options)
         if remote_debug_port:
             options.add_argument(f"--remote-debugging-port={remote_debug_port}")
-        super().__init__(options=options, **extra_driver_kwargs)
+        super().__init__(executable_path=executable_path, options=options, **extra_driver_kwargs)
         if user_agent is not None:
             self.set_user_agent(user_agent)
 
