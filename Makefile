@@ -68,7 +68,7 @@ $(OBJECTSCHROMIUM):
 	$(MAKE) templ-chromium SERVICE=$@
 
 $(addprefix lite/,$(OBJECTSCHROMIUM)):
-	$(MAKE) templ SERVICE=$(notdir $@)
+	$(MAKE) templ SERVICE=$(notdir $@) SUFFIX="-lite"
 
 $(addprefix test/lite/,$(OBJECTSCHROMIUM)):
 	$(MAKE) lite/$(notdir $@) ACTION=load PLATFORMS=$(TEST_PLATFORM)
