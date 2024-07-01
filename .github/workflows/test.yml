@@ -9,18 +9,18 @@ jobs:
   setup:
     runs-on: ubuntu-latest
     outputs:
-      mymatrix: ${{ steps.dataStep.outputs.myoutput }}
+      targets: ${{ steps.matrixTargets.outputs.targets }}
     steps:
       - name: Check out code
         uses: actions/checkout@v4
-      - id: dataStep
+      - id: matrixTargets
         shell: bash
         run: |
-          echo "myoutput=$(make | sed -e 's/ /\n/g' | jq -Rnc '{"target":[inputs]}')" >> $GITHUB_OUTPUT          
+          echo "targets=$(make | sed -e 's/ /\n/g' | jq -Rnc '{"target":[inputs]}')" >> $GITHUB_OUTPUT          
   build:
     needs: setup
     runs-on: ubuntu-latest
     strategy:
-      matrix: ${{ fromJson(needs.setup.outputs.mymatrix) }}
+      matrix: ${{ fromJson(needs.setup.outputs.targets) }}
     steps:
-      - run: echo ${{matrix.target}}
+      - run: make ${{matrix.target}}
