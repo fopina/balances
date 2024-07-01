@@ -1,27 +1,31 @@
-OBJECTS = anchor celsius degiro kucoinx financas caixabreak luna20 cryptocom aforronet metamask
-OBJECTSGCC = snailtrail
-OBJECTSCHROMIUM = plutus ibfetch
-BASE_IMAGE_NAME = ghcr.io/fopina/balances
-PLATFORMS = linux/amd64,linux/arm64
+OBJECTS := anchor celsius degiro kucoinx financas caixabreak luna20 cryptocom aforronet metamask
+OBJECTSGCC := snailtrail
+OBJECTSCHROMIUM := plutus ibfetch
+OBJECTSALL = $(OBJECTS) $(OBJECTSGCC) $(OBJECTSCHROMIUM)
+BASE_IMAGE_NAME := ghcr.io/fopina/balances
+PLATFORMS := linux/amd64,linux/arm64
+TEST_PLATFORM = $(shell docker system info --format '{{.OSType}}/{{.Architecture}}')
 TARGETBASE = alpine
 ACTION = push
 PYTHON_VERSION = 3.9
 DOCKER_EXTRA =
 SUFFIX = 
 
+.PHONY: list base base-gcc base-chromium base-alpine templ-base templ templ-gcc templ-chromium $(OBJECTSALL) $(addprefix test/,$(OBJECTSALL))
+
 list:
-	@echo $(OBJECTS) $(OBJECTSGCC) $(OBJECTSCHROMIUM)
+	@echo $(OBJECTSALL) $(addprefix lite/,$(OBJECTSCHROMIUM))
 
 base: base-alpine base-gcc base-chromium
 
 base-gcc:
-	make templ-base TARGETBASE=gcc
+	$(MAKE) templ-base TARGETBASE=gcc
 
 base-chromium:
-	make templ-base TARGETBASE=chromium
+	$(MAKE) templ-base TARGETBASE=chromium
 
 base-alpine:
-	make templ-base TARGETBASE=alpine
+	$(MAKE) templ-base TARGETBASE=alpine
 
 templ-base:
 	docker buildx build \
@@ -49,25 +53,27 @@ templ:
 				  --$(ACTION) .
 
 templ-gcc:
-		make templ TARGETBASE=gcc
+	$(MAKE) templ TARGETBASE=gcc
 
 templ-chromium:
-		make templ TARGETBASE=chromium
+	$(MAKE) templ TARGETBASE=chromium
 
-# FIXME: SERVICE=$@ does not work as variable declaration...
 $(OBJECTS):
-	SERVICE=$@ make templ PLATFORMS=linux/amd64 ACTION=load
-$(addprefix push/,$(OBJECTS)):
-	SERVICE=$(notdir $@) make templ ACTION=push
+	$(MAKE) templ SERVICE=$@
 
 $(OBJECTSGCC):
-	SERVICE=$@ make templ-gcc PLATFORMS=linux/amd64 ACTION=load
-$(addprefix push/,$(OBJECTSGCC)):
-	SERVICE=$(notdir $@) make templ-gcc ACTION=push
+	$(MAKE) templ-gcc SERVICE=$@
 
 $(OBJECTSCHROMIUM):
-	SERVICE=$@ make templ-chromium PLATFORMS=linux/amd64 ACTION=load
-$(addprefix push/,$(OBJECTSCHROMIUM)):
-	SERVICE=$(notdir $@) make templ-chromium ACTION=push
+	$(MAKE) templ-chromium SERVICE=$@
 
-all: $(OBJECTS) $(OBJECTSGCC) $(OBJECTSCHROMIUM)
+$(addprefix lite/,$(OBJECTSCHROMIUM)):
+	$(MAKE) templ SERVICE=$(notdir $@)
+
+$(addprefix test/lite/,$(OBJECTSCHROMIUM)):
+	$(MAKE) lite/$(notdir $@) ACTION=load PLATFORMS=$(TEST_PLATFORM)
+
+$(addprefix test/,$(OBJECTSALL)):
+	$(MAKE) $(notdir $@) ACTION=load PLATFORMS=$(TEST_PLATFORM)
+
+all: $(OBJECTSALL)

@@ -25,4 +25,4 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v4
-      - run: make ${{matrix.target}}
+      - run: make test/${{matrix.target}}

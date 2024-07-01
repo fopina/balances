@@ -1,2 +1,2 @@
 onetimepass==1.0.1
-selenium==4.3.0
+selenium==4.22.0
