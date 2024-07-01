@@ -11,7 +11,10 @@ jobs:
     outputs:
       mymatrix: ${{ steps.dataStep.outputs.myoutput }}
     steps:
+      - name: Check out code
+        uses: actions/checkout@v4
       - id: dataStep
+        shell: bash
         run: |
           echo "myoutput=$(make | sed -e 's/ /\n/g' | jq -Rnc '{"target":[inputs]}')" >> $GITHUB_OUTPUT          
   build:
