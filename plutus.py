@@ -8,7 +8,6 @@ from selenium.webdriver.common.by import By as By
 
 from common.cli.otp import OTPMixin
 from common.cli.selenium import SeleniumCLI
-from common.webdriver import MyDriver
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger(__name__)
