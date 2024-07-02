@@ -87,11 +87,11 @@ class Client(requests.Session):
         subs = []
         panels = re.findall(r'<div id="(panel\d+)">(.*?)</div>', r.text, re.DOTALL)
         for panel in panels:
-            m = re.findall(r'<td.+?>(.*?)</td>', panel[1], re.DOTALL)
-            series = TAG_RE.sub('', m[0])
-            for i in range(1, len(m), 5):
-                sub = m[i : i + 5]
-                if len(sub) < 5:
+            m_tr = re.findall(r'<tr.*?>(.*?)</tr>', panel[1], re.DOTALL)
+            for d_tr in m_tr:
+                sub = list(re.findall(r'<td.+?>(.*?)</td>', d_tr, re.DOTALL))
+                series = TAG_RE.sub('', sub[0])
+                if len(sub) != 5:
                     # subtotal
                     assert 'SubTotal:' in sub[0]
                     continue
