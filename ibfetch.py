@@ -99,7 +99,7 @@ class CLI(SeleniumCLI):
             el.send_keys(self.args.password)
             el.submit()
 
-            el = driver.find_element(By.CSS_SELECTOR, "a[href='#/portfolio'],div#ERRORMSG[style='']")
+            el = driver.find_element(By.CSS_SELECTOR, "a[href='#/portfolio'],div.xyz-errormessage:not(:empty)")
             if el.tag_name == 'div':
                 raise ClientError(el.get_attribute('innerHTML'))
             time.sleep(1)
