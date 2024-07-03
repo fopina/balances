@@ -1,10 +1,5 @@
-from typing import List
 from selenium import webdriver
 from pathlib import Path
-
-from selenium.webdriver.common.options import BaseOptions
-
-DEFAULT_USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36'
 
 
 class ChromiumHelperMixin:
@@ -36,7 +31,7 @@ class ChromiumHelperMixin:
 
 
 class MyRemoteDriver(webdriver.Remote, ChromiumHelperMixin):
-    def __init__(self, command_executor='http://127.0.0.1:4444', headless=False, user_agent=DEFAULT_USER_AGENT, **extra_driver_kwargs):
+    def __init__(self, command_executor='http://127.0.0.1:4444', headless=False, user_agent=None, **extra_driver_kwargs):
         options = self.init_options_in_driver_kwargs(extra_driver_kwargs)
         self.hide_selenium(options)
         if headless:
@@ -53,7 +48,7 @@ class MyRemoteDriver(webdriver.Remote, ChromiumHelperMixin):
 
 class MyDriver(webdriver.Chrome, ChromiumHelperMixin):
     def __init__(
-        self, headless=False, remote_debug_port=None, user_agent=DEFAULT_USER_AGENT, **extra_driver_kwargs
+        self, headless=False, remote_debug_port=None, user_agent=None, **extra_driver_kwargs
     ):
         options = self.init_options_in_driver_kwargs(extra_driver_kwargs)
         self.hide_selenium(options)
