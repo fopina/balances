@@ -1,10 +1,10 @@
 import time
 import requests
 from pathlib import Path
-from common.webdriver import MyDriver
 from common.cli.selenium import SeleniumCLI
 from selenium.webdriver.common.by import By as By
 import logging
+import json
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger(__name__)
@@ -19,10 +19,10 @@ class Client(requests.Session):
 
     def __init__(self, cookies):
         super().__init__()
+        self.cookies.update(cookies)
         self.headers.update(
             {
-                'Cookie': cookies,
-                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:102.0) Gecko/20100101 Firefox/102.0',
+                'User-Agent': SeleniumCLI.DEFAULT_USER_AGENT,
             },
         )
 
@@ -51,7 +51,7 @@ class CLI(SeleniumCLI):
 
     def get_client(self, args):
         if args.token_file.exists():
-            cookies = args.token_file.read_text().strip()
+            cookies = json.loads(args.token_file.read_text())
             client = Client(cookies)
             try:
                 client.validate()
@@ -75,7 +75,7 @@ class CLI(SeleniumCLI):
                 time.sleep(5)
 
         with args.token_file.open("w") as f:
-            f.write(cookies)
+            f.write(json.dumps(cookies))
 
         client = Client(cookies)
         return client
@@ -84,12 +84,13 @@ class CLI(SeleniumCLI):
         logger.info("logging in")
         driver = self.get_webdriver()
         driver.implicitly_wait(20)
+        cookies = {}
         try:
-            driver.get("https://www.interactivebrokers.co.uk/sso/Login?RL=1")
+            driver.get("https://www.interactivebrokers.co.uk/sso/Login")
             el = driver.find_element(By.NAME, "username")
             # accept privacy cookies
             driver.add_cookie({"name": "IB_PRIV_PREFS", "value": "0%7C0%7C0"})
-            driver.get("https://www.interactivebrokers.co.uk/sso/Login?RL=1")
+            driver.get("https://www.interactivebrokers.co.uk/sso/Login")
             el = driver.find_element(By.NAME, "username")
             time.sleep(1)
             logger.info("found login form")
@@ -103,14 +104,14 @@ class CLI(SeleniumCLI):
                 raise ClientError(el.get_attribute('innerHTML'))
             time.sleep(1)
             logger.info("logged in!")
-            refresh_token = driver.execute_script("return document.cookie;")
+            cookies.update({c['name']: c['value'] for c in driver.get_cookies()})
         except Exception:
             if self.args.screenshot:
                 driver.save_screenshot(str(self.args.token_file.parent / 'ibfetch-debug.png'))
             raise
         finally:
             driver.quit()
-        return refresh_token
+        return cookies
 
     def handle(self, args):
         client = self.get_client(args)
