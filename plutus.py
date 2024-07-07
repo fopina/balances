@@ -4,11 +4,11 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 import requests
+from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.common.by import By as By
 
 from common.cli.otp import OTPMixin
 from common.cli.selenium import SeleniumCLI
-from common.webdriver import MyDriver
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger(__name__)
@@ -118,9 +118,7 @@ class CLI(OTPMixin, SeleniumCLI):
                 rtoken = self.login_and_token()
                 print(f'PLUTUS: LOGIN SUCCESS ON TRY {tries}')
                 break
-            except ClientError:
-                raise
-            except Exception as e:
+            except WebDriverException as e:
                 tries += 1
                 if tries == 3:
                     raise
@@ -134,7 +132,7 @@ class CLI(OTPMixin, SeleniumCLI):
         return client
 
     def login_and_token(self):
-        otp=self.otp_holder(self.args),
+        otp = self.otp_holder(self.args)
         logger.info("logging in")
         driver = self.get_webdriver()
         driver.implicitly_wait(20)

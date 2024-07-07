@@ -1,5 +1,5 @@
-from . import BasicCLI
 from .. import webdriver
+from . import BasicCLI
 
 
 class SeleniumCLI(BasicCLI):

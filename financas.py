@@ -1,11 +1,12 @@
-import requests
+import html
+import logging
 import re
+import time
 from datetime import datetime
+
+import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
-import logging
-import html
-import time
 
 from common.cli import BasicCLI
 

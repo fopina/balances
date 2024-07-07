@@ -1,4 +1,4 @@
-from kucoin.client import User, MarketData
+from kucoin.client import MarketData, User
 
 from common.cli import BasicCLI
 

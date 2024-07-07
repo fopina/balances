@@ -1,7 +1,8 @@
-import urllib.request
-import urllib.parse
-import json
 import argparse
+import json
+import urllib.parse
+import urllib.request
+
 from common.hass import hass_parser, push_to_hass
 
 
