@@ -1,8 +1,8 @@
-import requests
 import re
 
-from common.cli import BasicCLI
+import requests
 
+from common.cli import BasicCLI
 
 TAG_RE = re.compile(r'<.+?>')
 

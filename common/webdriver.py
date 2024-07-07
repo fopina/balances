@@ -1,5 +1,6 @@
-from selenium import webdriver
 from pathlib import Path
+
+from selenium import webdriver
 
 
 class ChromiumHelperMixin:
@@ -9,7 +10,7 @@ class ChromiumHelperMixin:
         options.add_experimental_option("useAutomationExtension", False)
         options.add_argument("--disable-blink-features")
         options.add_argument("--disable-blink-features=AutomationControlled")
-    
+
     def go_headless(self, options: webdriver.ChromeOptions):
         options.add_argument("--headless")
         options.add_argument("--disable-gpu")
@@ -23,7 +24,7 @@ class ChromiumHelperMixin:
             "Network.setUserAgentOverride",
             {"userAgent": user_agent},
         )
-    
+
     def init_options_in_driver_kwargs(self, extra_driver_kwargs: dict):
         options = extra_driver_kwargs.pop('options', webdriver.ChromeOptions())
         assert isinstance(options, webdriver.ChromeOptions)
@@ -31,7 +32,9 @@ class ChromiumHelperMixin:
 
 
 class MyRemoteDriver(webdriver.Remote, ChromiumHelperMixin):
-    def __init__(self, command_executor='http://127.0.0.1:4444', headless=False, user_agent=None, **extra_driver_kwargs):
+    def __init__(
+        self, command_executor='http://127.0.0.1:4444', headless=False, user_agent=None, **extra_driver_kwargs
+    ):
         options = self.init_options_in_driver_kwargs(extra_driver_kwargs)
         self.hide_selenium(options)
         if headless:
@@ -47,9 +50,7 @@ class MyRemoteDriver(webdriver.Remote, ChromiumHelperMixin):
 
 
 class MyDriver(webdriver.Chrome, ChromiumHelperMixin):
-    def __init__(
-        self, headless=False, remote_debug_port=None, user_agent=None, **extra_driver_kwargs
-    ):
+    def __init__(self, headless=False, remote_debug_port=None, user_agent=None, **extra_driver_kwargs):
         options = self.init_options_in_driver_kwargs(extra_driver_kwargs)
         self.hide_selenium(options)
 

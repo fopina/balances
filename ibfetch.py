@@ -1,11 +1,13 @@
-import time
-import requests
-from pathlib import Path
-from common.cli.selenium import SeleniumCLI
-from selenium.webdriver.common.by import By as By
-from selenium.common.exceptions import WebDriverException
-import logging
 import json
+import logging
+import time
+from pathlib import Path
+
+import requests
+from selenium.common.exceptions import WebDriverException
+from selenium.webdriver.common.by import By as By
+
+from common.cli.selenium import SeleniumCLI
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger(__name__)

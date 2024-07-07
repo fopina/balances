@@ -3,7 +3,6 @@ from web3.middleware import geth_poa_middleware
 
 from common.cli import BasicCLI, fx, hass
 
-
 CONTRACT_RACE = '0x58B699642f2a4b91Dd10800Ef852427B719dB1f0'
 CONTRACT_SLIME = '0x5a15Bdcf9a3A8e799fa4381E666466a516F2d9C8'
 CONTRACT_SNAILNFT = '0xec675B7C5471c67E9B203c6D1C604df28A89FB7f'

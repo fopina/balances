@@ -4,8 +4,8 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 import requests
-from selenium.webdriver.common.by import By as By
 from selenium.common.exceptions import WebDriverException
+from selenium.webdriver.common.by import By as By
 
 from common.cli.otp import OTPMixin
 from common.cli.selenium import SeleniumCLI
@@ -132,7 +132,7 @@ class CLI(OTPMixin, SeleniumCLI):
         return client
 
     def login_and_token(self):
-        otp=self.otp_holder(self.args)
+        otp = self.otp_holder(self.args)
         logger.info("logging in")
         driver = self.get_webdriver()
         driver.implicitly_wait(20)
