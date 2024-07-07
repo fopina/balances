@@ -38,6 +38,7 @@ class Client(requests.Session):
             path = 'login/secure/login/device'
 
         r = self.post(path, json=data)
+        r.raise_for_status()
         d = r.json()
         if d['status'] == 0:
             # success

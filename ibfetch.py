@@ -3,6 +3,7 @@ import requests
 from pathlib import Path
 from common.cli.selenium import SeleniumCLI
 from selenium.webdriver.common.by import By as By
+from selenium.common.exceptions import WebDriverException
 import logging
 import json
 
@@ -67,7 +68,7 @@ class CLI(SeleniumCLI):
                 break
             except ClientError:
                 raise
-            except Exception as e:
+            except WebDriverException as e:
                 tries += 1
                 if tries == 3:
                     raise
