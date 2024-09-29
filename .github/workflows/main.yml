@@ -18,7 +18,7 @@ jobs:
       - id: matrixTargets
         shell: bash
         run: |
-          echo "targets=$(make | sed -e 's/ /\n/g' | jq -Rnc '{"target":[inputs]}')" >> $GITHUB_OUTPUT          
+          echo "targets=$(./build.py -h | grep 'positional arguments' -A1 | tail -n1 | sed 's/,/\n/g' | grep -ve all -e mixin$ -e ^base | jq -Rnc '{"target":[inputs]}')" >> $GITHUB_OUTPUT
   build:
     needs: setup
     runs-on: ubuntu-latest
@@ -43,4 +43,4 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - run: make ${{matrix.target}}
+      - run: ./build.py -p ${{matrix.target}}
