@@ -4,21 +4,21 @@ ARG TARGETBASE=alpine
 
 ##### BASE ALPINE
 
-FROM ${BASE} as basealpine-arm64
-FROM ${BASE} as basealpine-amd64
+FROM ${BASE} AS basealpine-arm64
+FROM ${BASE} AS basealpine-amd64
 
 # ==== CLEAN BASE ====
-FROM basealpine-${TARGETARCH}${TARGETVARIANT} as alpine
+FROM basealpine-${TARGETARCH}${TARGETVARIANT} AS alpine
 
 # =====================
 
 ##### BASESLIM
 
-FROM ${BASESLIM} as baseslim-arm64
-FROM ${BASESLIM} as baseslim-amd64
+FROM ${BASESLIM} AS baseslim-arm64
+FROM ${BASESLIM} AS baseslim-amd64
 
 # === SLIM+GCC BASE ===
-FROM baseslim-${TARGETARCH}${TARGETVARIANT} as gcc
+FROM baseslim-${TARGETARCH}${TARGETVARIANT} AS gcc
 
 RUN apt update \
  && apt install --no-install-recommends -y \
@@ -28,7 +28,7 @@ RUN apt update \
 
 # === CHROMIUM BASE ===
 # Chrome dockerfile based on https://github.com/justinribeiro/dockerfiles/blob/master/chrome-headless/Dockerfile
-FROM baseslim-${TARGETARCH}${TARGETVARIANT} as chromium
+FROM baseslim-${TARGETARCH}${TARGETVARIANT} AS chromium
 
 RUN apt update \
  && apt install --no-install-recommends -y \
