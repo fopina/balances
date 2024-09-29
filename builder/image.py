@@ -1,3 +1,4 @@
+from functools import cached_property
 import subprocess
 import os
 import shlex
@@ -9,7 +10,7 @@ class ImageMixin:
 
 class Image:
     PLATFORMS = 'linux/amd64,linux/arm64'
-    IMAGE_BASE = 'xxx'
+    IMAGE_BASE = None
 
     # these are to be defined in subclasses
     CONTEXT = None
@@ -41,7 +42,6 @@ class Image:
         return self.BUILD_ARGS
 
     def get_revision(self) -> str:
-        # decode() instead of text=True as python 3.6 is still used
         return subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD']).decode().strip()
 
     def get_parameter(self, name) -> str:
@@ -58,11 +58,6 @@ class Image:
         args = [
             'docker', 'buildx', 'build',
             '--build-arg', f'VCS_REF={self.get_revision()}',
-            '--build-arg', f'http_proxy={os.getenv("http_proxy")}',
-            '--build-arg', f'https_proxy={os.getenv("http_proxy")}',
-            '--build-arg', f'HTTP_PROXY={os.getenv("http_proxy")}',
-            '--build-arg', f'HTTPS_PROXY={os.getenv("http_proxy")}',
-            '--build-arg', f'no_proxy={os.getenv("no_proxy")}',
             '-f', self.DOCKERFILE,
             self.CONTEXT,
         ]

@@ -1,11 +1,46 @@
 #!/usr/bin/env -S python3 -u
 
+import subprocess
 from typing import Dict, List, Tuple
 from builder import cli
 from builder.image import Image, ImageMixin
 from functools import lru_cache
 
+PYTHON_VERSION = 3.9
+
+
+class BalanceMixin(ImageMixin):
+    IMAGE_BASE = 'ghcr.io/fopina'
+    IMAGE = 'balances'
+    DOCKERFILE = 'docker/Dockerfile'
+    CONTEXT = '.'
+
+    @property
+    def service(self):
+        return self.__class__.__name__.lower()
     
+    def get_tag(self):
+        return self.service
+    
+    def get_full_tags(self):
+        x = super().get_full_tags()
+        x.append(f'{x[0]}-{self.get_revision()}')
+        return x
+    
+    def get_revision(self) -> str:
+        return str(len(subprocess.check_output(['git', 'log', '--oneline', f'{self.service}.py', 'docker']).decode().splitlines()))
+    
+    def get_build_args(self):
+        return {
+            'TARGETBASE': f'ghcr.io/fopina/balances:base-{PYTHON_VERSION}-alpine',
+            'ENTRY': self.service,
+        }
+
+
+class MetaMask(BalanceMixin, Image):
+    pass
+
+
 class Node(ImageMixin):
     DOCKERFILE = 'node/Dockerfile'
     CONTEXT = 'node'
