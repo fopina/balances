@@ -80,3 +80,67 @@ class Image:
 
     def build(self) -> int:
         return subprocess.check_call(self.build_command())
+
+
+class AlpineMixin(ImageMixin):
+    IMAGE_BASE = 'ghcr.io/fopina'
+    IMAGE = 'balances'
+    DOCKERFILE = 'docker/Dockerfile'
+    CONTEXT = '.'
+    PYTHON_VERSION = 3.9
+    FLAVOR = 'alpine'
+
+    @property
+    def service(self):
+        return self.__class__.__name__.lower()
+    
+    def get_tag(self):
+        return self.service
+    
+    def get_full_tags(self):
+        x = super().get_full_tags()
+        x.append(f'{x[0]}-{self.get_revision()}')
+        return x
+    
+    def get_revision(self) -> str:
+        return str(len(subprocess.check_output(['git', 'log', '--oneline', f'{self.service}.py', 'docker']).decode().splitlines()))
+    
+    def get_build_args(self):
+        return {
+            'TARGETBASE': f'ghcr.io/fopina/balances:base-{self.PYTHON_VERSION}-{self.FLAVOR}',
+            'ENTRY': self.service,
+        }
+
+
+class GCCMixin(AlpineMixin, ImageMixin):
+    FLAVOR = 'gcc'
+
+
+class ChromiumMixin(AlpineMixin, ImageMixin):
+    FLAVOR = 'chromium'
+
+
+class BaseMixin(AlpineMixin, ImageMixin):
+    IMAGE_BASE = 'ghcr.io/fopina'
+    IMAGE = 'balances'
+    DOCKERFILE = 'docker/Dockerfile.base'
+    CONTEXT = '.'
+    PYTHON_VERSION = 3.9
+    FLAVOR = 'alpine'
+
+    def get_tag(self):
+        return f'base-{self.PYTHON_VERSION}-{self.FLAVOR}'
+
+    def get_revision(self) -> str:
+        return str(len(subprocess.check_output(['git', 'log', '--oneline', 'docker']).decode().splitlines()))
+    
+    def get_build_args(self):
+        return {
+            'BASE': f'python:{self.PYTHON_VERSION}-alpine',
+			'BASESLIM': f'python:{self.PYTHON_VERSION}-slim',
+        }
+    
+    def build_command(self):
+        cmd = super().build_command()
+        cmd.extend(['--target', self.FLAVOR])
+        return cmd

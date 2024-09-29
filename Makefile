@@ -40,24 +40,6 @@ templ-base:
 				  --target $(TARGETBASE) \
 				  --$(ACTION) .
 
-templ:
-	docker buildx build \
-				  --platform $(PLATFORMS) \
-				  --pull \
-				  -t $(BASE_IMAGE_NAME):$(SERVICE)$(SUFFIX)-$(shell git log --oneline $(SERVICE).py docker | wc -l | tr -d ' ') \
-				  -t $(BASE_IMAGE_NAME):$(SERVICE)$(SUFFIX) \
-				  --build-arg TARGETBASE=ghcr.io/fopina/balances:base-$(PYTHON_VERSION)-$(TARGETBASE) \
-				  --build-arg ENTRY=$(SERVICE) \
-				  $(DOCKER_EXTRA) \
-				  -f docker/Dockerfile \
-				  --$(ACTION) .
-
-templ-gcc:
-	$(MAKE) templ TARGETBASE=gcc
-
-templ-chromium:
-	$(MAKE) templ TARGETBASE=chromium
-
 $(OBJECTS):
 	$(MAKE) templ SERVICE=$@
 
