@@ -25,4 +25,4 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v4
-      - run: ./build.py /${{matrix.target}}
+      - run: ./build.py ${{matrix.target}}
