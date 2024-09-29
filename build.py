@@ -1,7 +1,7 @@
 #!/usr/bin/env -S python3 -u
 
 from builder import cli
-from builder.image import Image, AlpineMixin, GCCMixin, ChromiumMixin, BaseMixin
+from builder.image import Image, AlpineMixin, GCCMixin, ChromiumMixin, ChromiumLiteMixin, BaseMixin
 
 
 class MetaMask(AlpineMixin, Image): pass
@@ -18,7 +18,9 @@ class AforroNet(AlpineMixin, Image): pass
 class SnailTrail(GCCMixin, Image): pass
 
 class Plutus(ChromiumMixin, Image): pass
+class PlutusLite(ChromiumLiteMixin, Image): pass
 class IBFetch(ChromiumMixin, Image): pass
+class IBFetchLite(ChromiumLiteMixin, Image): pass
 
 class BaseAlpine(BaseMixin, Image): pass
 
