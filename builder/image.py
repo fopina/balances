@@ -1,8 +1,9 @@
-from functools import cached_property
-import subprocess
 import os
 import shlex
+import subprocess
+from pathlib import Path
 from typing import Dict, List
+
 
 class ImageMixin:
     """Mixin base class just to tag "families" of images"""
@@ -10,6 +11,7 @@ class ImageMixin:
 
 class Image:
     PLATFORMS = 'linux/amd64,linux/arm64'
+    CWD = Path(__file__).resolve().parent.parent
     IMAGE_BASE = None
 
     # these are to be defined in subclasses
@@ -32,7 +34,7 @@ class Image:
     def get_tag(self) -> str:
         """This can be overriden with more complex logic"""
         return self.TAG
-    
+
     def get_image(self) -> str:
         """This can be overriden with more complex logic"""
         return self.IMAGE
@@ -42,7 +44,7 @@ class Image:
         return self.BUILD_ARGS
 
     def get_revision(self) -> str:
-        return subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD']).decode().strip()
+        return subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD'], cwd=self.CWD).decode().strip()
 
     def get_parameter(self, name) -> str:
         """
@@ -56,9 +58,13 @@ class Image:
         assert self.CONTEXT is not None
 
         args = [
-            'docker', 'buildx', 'build',
-            '--build-arg', f'VCS_REF={self.get_revision()}',
-            '-f', self.DOCKERFILE,
+            'docker',
+            'buildx',
+            'build',
+            '--build-arg',
+            f'VCS_REF={self.get_revision()}',
+            '-f',
+            self.DOCKERFILE,
             self.CONTEXT,
         ]
 
@@ -72,14 +78,14 @@ class Image:
 
         for k, v in self.get_build_args().items():
             args.extend(['--build-arg', f'{k}={v}'])
-        
+
         if self._docker_extra:
             args.extend(shlex.split(self._docker_extra))
 
         return args
 
     def build(self) -> int:
-        return subprocess.check_call(self.build_command())
+        return subprocess.check_call(self.build_command(), cwd=self.CWD)
 
 
 class AlpineMixin(ImageMixin):
@@ -93,18 +99,24 @@ class AlpineMixin(ImageMixin):
     @property
     def service(self):
         return self.__class__.__name__.lower()
-    
+
     def get_tag(self):
         return self.service
-    
+
     def get_full_tags(self):
         x = super().get_full_tags()
         x.append(f'{x[0]}-{self.get_revision()}')
         return x
-    
+
     def get_revision(self) -> str:
-        return str(len(subprocess.check_output(['git', 'log', '--oneline', f'{self.service}.py', 'docker']).decode().splitlines()))
-    
+        return str(
+            len(
+                subprocess.check_output(['git', 'log', '--oneline', f'{self.service}.py', 'docker'], cwd=self.CWD)
+                .decode()
+                .splitlines()
+            )
+        )
+
     def get_build_args(self):
         return {
             'TARGETBASE': f'ghcr.io/fopina/balances:base-{self.PYTHON_VERSION}-{self.FLAVOR}',
@@ -128,10 +140,7 @@ class ChromiumLiteMixin(AlpineMixin, ImageMixin):
 
     def get_full_tags(self):
         x = super().get_full_tags()[0]
-        return [
-            f'{x}-lite',
-            f'{x}-lite-{self.get_revision()}'
-        ]
+        return [f'{x}-lite', f'{x}-lite-{self.get_revision()}']
 
 
 class BaseMixin(AlpineMixin, ImageMixin):
@@ -147,13 +156,13 @@ class BaseMixin(AlpineMixin, ImageMixin):
 
     def get_revision(self) -> str:
         return str(len(subprocess.check_output(['git', 'log', '--oneline', 'docker']).decode().splitlines()))
-    
+
     def get_build_args(self):
         return {
             'BASE': f'python:{self.PYTHON_VERSION}-alpine',
-			'BASESLIM': f'python:{self.PYTHON_VERSION}-slim',
+            'BASESLIM': f'python:{self.PYTHON_VERSION}-slim',
         }
-    
+
     def build_command(self):
         cmd = super().build_command()
         cmd.extend(['--target', self.FLAVOR])

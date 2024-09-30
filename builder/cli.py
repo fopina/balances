@@ -1,25 +1,33 @@
 import argparse
+import os
 from functools import lru_cache
 from typing import Dict
+
 from .image import Image, ImageMixin
-import os
 
 
 class CLI:
     @lru_cache()
     def discover_images(self) -> Dict[str, any]:
-        images = {'all':  Image}
-        images.update({
-            c.__name__.lower(): c
-            for c in [*ImageMixin.__subclasses__(), *Image.__subclasses__()]
-        })
+        images = {'all': Image}
+        images.update({c.__name__.lower(): c for c in [*ImageMixin.__subclasses__(), *Image.__subclasses__()]})
         return images
 
     def parser(self):
         parser = argparse.ArgumentParser()
         parser.add_argument(
-            'name', nargs='+', type=str.lower, choices=self.discover_images().keys(), help='Name of image (or family of images) you want to build')
-        parser.add_argument('-p', '--push', action='store_true', help='Build for all platforms and push image. Default is to do local build only.')
+            'name',
+            nargs='+',
+            type=str.lower,
+            choices=self.discover_images().keys(),
+            help='Name of image (or family of images) you want to build',
+        )
+        parser.add_argument(
+            '-p',
+            '--push',
+            action='store_true',
+            help='Build for all platforms and push image. Default is to do local build only.',
+        )
         parser.add_argument('--dry', action='store_true', help='Print docker build commands, do not execute anything.')
         parser.add_argument('--docker-extra', type=str, help='Extra options to be passed to docker build command')
         return parser
