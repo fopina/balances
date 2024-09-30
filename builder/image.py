@@ -96,9 +96,11 @@ class AlpineMixin(ImageMixin):
     PYTHON_VERSION = 3.9
     FLAVOR = 'alpine'
 
+    _service = None
+
     @property
     def service(self):
-        return self.__class__.__name__.lower()
+        return self._service or self.__class__.__name__.lower()
 
     def get_tag(self):
         return self.service
@@ -119,7 +121,7 @@ class AlpineMixin(ImageMixin):
 
     def get_build_args(self):
         return {
-            'TARGETBASE': f'ghcr.io/fopina/balances:base-{self.PYTHON_VERSION}-{self.FLAVOR}',
+            'TARGETBASE': f'{self.IMAGE_BASE}/{self.get_image()}:base-{self.PYTHON_VERSION}-{self.FLAVOR}',
             'ENTRY': self.service,
         }
 

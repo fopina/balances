@@ -54,6 +54,7 @@ class CLI:
                 print(nc.build_command())
             else:
                 nc.build()
+                print(f'Images: {nc.get_full_tags()}')
 
 
 def cli(argv=None):
