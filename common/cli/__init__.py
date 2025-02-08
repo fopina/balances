@@ -35,6 +35,12 @@ class BasicCLI:
 
     def pprint(self, *args, **kwargs):
         hass.pprint(*args, **kwargs)
+    
+    def unhandled_exception(self, exc):
+        raise
 
     def __call__(self, argv=None):
-        return self.execute(argv)
+        try:
+            return self.execute(argv)
+        except Exception as e:
+            self.unhandled_exception(e)
