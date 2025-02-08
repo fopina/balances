@@ -102,15 +102,18 @@ class CLI(SeleniumCLI):
             el.send_keys(self.args.password)
             el.submit()
 
-            el = driver.find_element(By.CSS_SELECTOR, "a[href='#/portfolio'],div.xyz-errormessage:not(:empty)")
+            el = driver.find_element(By.CSS_SELECTOR, "#cp-ib-bar-sl-input,div.xyz-errormessage:not(:empty)")
             if el.tag_name == 'div':
                 raise ClientError(el.get_attribute('innerHTML'))
             time.sleep(1)
             logger.info("logged in!")
             cookies.update({c['name']: c['value'] for c in driver.get_cookies()})
+        except ClientError:
+            raise
         except Exception:
             if self.args.screenshot:
-                driver.save_screenshot(str(self.args.token_file.parent / 'ibfetch-debug.png'))
+                driver.save_screenshot('ibfetch-debug.png')
+            print(f'== SOURCE ==\n{driver.page_source}\n== SOURCE END ==')
             raise
         finally:
             driver.quit()
