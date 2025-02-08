@@ -1,4 +1,5 @@
 import argparse
+import sys
 
 from .. import hass
 
@@ -41,6 +42,11 @@ class BasicCLI:
 
     def __call__(self, argv=None):
         try:
-            return self.execute(argv)
+            # if execute() is not specific (None), assume 0
+            sys.exit(self.execute(argv) or 0)
         except Exception as e:
-            self.unhandled_exception(e)
+            # if unhandled_exception is not specific (None), assume 2
+            r = self.unhandled_exception(e)
+            if r is None:
+                r = 2
+            sys.exit(r)
