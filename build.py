@@ -8,14 +8,6 @@ class MetaMask(AlpineMixin, Image):
     pass
 
 
-class Anchor(AlpineMixin, Image):
-    pass
-
-
-class Celsius(AlpineMixin, Image):
-    pass
-
-
 class Degiro(AlpineMixin, Image):
     pass
 
@@ -32,23 +24,11 @@ class CaixaBreak(AlpineMixin, Image):
     pass
 
 
-class Luna20(AlpineMixin, Image):
-    pass
-
-
 class CryptoCom(AlpineMixin, Image):
     pass
 
 
 class AforroNet(AlpineNGMixin, Image):
-    pass
-
-
-class SnailTrail(AlpineNGMixin, Image):
-    pass
-
-
-class Plutus(ChromiumLiteMixin, Image):
     pass
 
 
