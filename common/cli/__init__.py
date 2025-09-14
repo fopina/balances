@@ -36,7 +36,7 @@ class BasicCLI:
 
     def pprint(self, *args, **kwargs):
         hass.pprint(*args, **kwargs)
-    
+
     def unhandled_exception(self, exc):
         raise
 

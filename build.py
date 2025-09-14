@@ -1,7 +1,7 @@
 #!/usr/bin/env -S python3 -u
 
 from builder import cli
-from builder.image import AlpineMixin, BaseMixin, ChromiumLiteMixin, ChromiumMixin, GCCMixin, Image
+from builder.image import AlpineMixin, BaseMixin, ChromiumLiteMixin, GCCMixin, Image
 
 
 class MetaMask(AlpineMixin, Image):
@@ -48,19 +48,11 @@ class SnailTrail(GCCMixin, Image):
     pass
 
 
-class Plutus(ChromiumMixin, Image):
+class Plutus(ChromiumLiteMixin, Image):
     pass
 
 
-class PlutusLite(ChromiumLiteMixin, Image):
-    pass
-
-
-class IBFetch(ChromiumMixin, Image):
-    pass
-
-
-class IBFetchLite(ChromiumLiteMixin, Image):
+class IBFetch(ChromiumLiteMixin, Image):
     pass
 
 
@@ -68,12 +60,12 @@ class BaseAlpine(BaseMixin, Image):
     pass
 
 
+class BaseAlpine312(BaseMixin, Image):
+    PYTHON_VERSION = 3.12
+
+
 class BaseGCC(BaseMixin, Image):
     FLAVOR = 'gcc'
-
-
-class BaseChromium(BaseMixin, Image):
-    FLAVOR = 'chromium'
 
 
 if __name__ == '__main__':
