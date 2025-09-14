@@ -13,6 +13,7 @@ parser.add_argument(
     help='Script file to execute',
 )
 parser.add_argument('--docker', action='store_true', help='Use docker image')
+parser.add_argument("flags", nargs=argparse.REMAINDER, help="Extra arguments to forward to script")
 
 args = parser.parse_args()
 
@@ -41,6 +42,9 @@ for s_arg in PARAM_MAP[args.script][1]:
                 assert False, f'{s_arg} field not found'
     else:
         s_args.append(s_arg)
+
+if args.flags:
+    s_args.extend(args.flags)
 
 try:
     if args.docker:
