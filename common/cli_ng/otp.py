@@ -1,16 +1,16 @@
+from dataclasses import dataclass
 import onetimepass
+import classyclick
 
 
+@dataclass
 class OTPMixin:
-    def build_parser(self):
-        parser = super().build_parser()
-        parser.add_argument('-o', '--otp', help='OTP code')
-        parser.add_argument('-s', '--otp-secret', help='OTP secret (to generate code)')
-        return parser
+    otp: str = classyclick.Option('-o', help='OTP code')
+    otp_secret: str = classyclick.Option('-s', help='OTP secret (to generate code)')
 
-    def otp_holder(self, args):
-        if args.otp or args.otp_secret:
-            return _Holder(args.otp, args.otp_secret)
+    def otp_holder(self):
+        if self.otp or self.otp_secret:
+            return _Holder(self.otp, self.otp_secret)
 
 
 class _Holder:

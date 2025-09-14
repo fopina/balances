@@ -5,7 +5,9 @@ This allows collecting multiple tokens without knowing contracts in advance for 
 """
 import requests
 
-from common.cli import BasicCLI
+from common.cli_ng import BasicCLI
+import classyclick
+from dataclasses import dataclass
 
 
 class Client(requests.Session):
@@ -30,13 +32,17 @@ class Client(requests.Session):
         return r.json()
 
 
-class CLI(BasicCLI):
-    def extend_parser(self, parser):
-        parser.add_argument('wallet')
-        parser.add_argument('chain_id', type=int)
-        parser.add_argument('--no-prices', action='store_true', help='Do not include prices for the tokens')
+@dataclass
+class Args:
+    # FIXME: this should be directly in CLI but classyclick does not allow ordering arguments... split for now to control inheritance order...
+    wallet: str = classyclick.Argument()
+    chain_id: int = classyclick.Argument()
+    no_prices: bool = classyclick.Option(help='Do not include prices for the tokens')
 
-    def handle(self, args):
+
+@classyclick.command()
+class CLI(BasicCLI, Args):
+    def handle(self):
         hass_data = {
             'state': 0,
             'attributes': {
@@ -45,7 +51,7 @@ class CLI(BasicCLI):
         }
 
         c = Client()
-        data = c.accounts(args.wallet, args.chain_id, include_prices=not args.no_prices)
+        data = c.accounts(self.wallet, self.chain_id, include_prices=not self.no_prices)
 
         print(f'Data updated at: {data["updatedAt"]}')
         _s = data['nativeBalance']['symbol'].lower()
@@ -64,4 +70,4 @@ class CLI(BasicCLI):
 
 
 if __name__ == '__main__':
-    CLI()()
+    CLI.click()

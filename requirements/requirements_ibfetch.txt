@@ -1,1 +1,1 @@
-selenium==4.22.0
+-r requirements_common_selenium.txt

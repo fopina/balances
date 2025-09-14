@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 import html
 import logging
 import re
@@ -5,10 +6,11 @@ import time
 from datetime import datetime
 
 import requests
+import classyclick
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
-from common.cli import BasicCLI
+from common.cli_ng import BasicCLI
 
 logger = logging.getLogger(__name__)
 
@@ -116,22 +118,23 @@ class Client(requests.Session):
         return data
 
 
-class CLI(BasicCLI):
-    def extend_parser(self, parser):
-        parser.add_argument('username')
-        parser.add_argument('password')
-        parser.add_argument('-o', '--otp', help='OTP code')
-        parser.add_argument('-s', '--otp-secret', help='OTP secret (to generate code)')
-        parser.add_argument('-p', '--pin', help='use device login with this pin code (password should be device id)')
+@dataclass
+class Args:
+    # FIXME: this should be directly in CLI but classyclick does not allow ordering arguments... split for now to control inheritance order...
+    username: str = classyclick.Argument()
+    password: str = classyclick.Argument()
 
-    def handle(self, args):
+
+@classyclick.command()
+class CLI(BasicCLI, Args):
+    def handle(self):
         # sometimes portal fails to load dashboard with a maintenance message such as:
         # '<strong>Por motivos de ordem t&eacute;cnica n&atilde;o nos &eacute; poss&iacute;vel responder ao seu pedido.'
         # and stats (parsed) will be empty
         # session needs to be reset to retry (as login already "succeeded")
         for _try in range(10):
             client = Client()
-            stats = client.login(args.username, args.password)
+            stats = client.login(self.username, self.password)
             if stats:
                 break
             logger.error('empty stats, try %d', _try)
@@ -160,8 +163,4 @@ class CLI(BasicCLI):
 
 
 if __name__ == '__main__':
-    try:
-        CLI()()
-    except ClientError as e:
-        logger.error(e)
-        exit(1)
+    CLI.click()

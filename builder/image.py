@@ -131,12 +131,6 @@ class AlpineNGMixin(AlpineMixin):
     PYTHON_VERSION = 3.13
 
 
-class ChromiumLiteMixin(AlpineMixin, ImageMixin):
-    def get_full_tags(self):
-        x = super().get_full_tags()[0]
-        return [f'{x}-lite', f'{x}-lite-{self.get_revision()}']
-
-
 class BaseMixin(AlpineMixin, ImageMixin):
     IMAGE_BASE = 'ghcr.io/fopina'
     IMAGE = 'balances'

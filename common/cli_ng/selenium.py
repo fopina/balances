@@ -1,19 +1,22 @@
+from dataclasses import dataclass
+
+import classyclick
 from .. import webdriver
 from . import BasicCLI
 
 
+@dataclass
 class SeleniumCLI(BasicCLI):
-    def build_parser(self):
-        p = super().build_parser()
-        webdriver.selenium_parser(p)
-        return p
+    headful: bool = classyclick.Option(help="Run Chromium WITHOUT headless mode")
+    grid: str = classyclick.Option(help="Use remote chromium (in a selenium grid)")
+    remote_debugging_port: int = classyclick.Option(help="chromium remote debugging port")
 
     def get_webdriver(self, user_agent=BasicCLI.DEFAULT_USER_AGENT, **kwargs):
         kwargs['user_agent'] = user_agent
         if 'headless' not in kwargs:
-            kwargs['headless'] = not self.args.headful
+            kwargs['headless'] = not self.headful
 
-        if self.args.grid:
-            return webdriver.MyRemoteDriver(command_executor=self.args.grid, **kwargs)
+        if self.grid:
+            return webdriver.MyRemoteDriver(command_executor=self.grid, **kwargs)
 
-        return webdriver.MyDriver(remote_debug_port=self.args.remote_debugging_port, **kwargs)
+        return webdriver.MyDriver(remote_debug_port=self.remote_debugging_port, **kwargs)

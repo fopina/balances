@@ -1,6 +1,9 @@
 import argparse
+from dataclasses import dataclass
 
 import requests
+import classyclick
+from common.cli_ng import BasicCLI
 
 
 class ClientError(Exception):
@@ -44,40 +47,32 @@ class Client(requests.Session):
         return r.json()
 
 
-def build_parser():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('username', help='contract number - use mitm to get the initial POST request')
-    parser.add_argument('auth', help='base64 basic string - use mitm to get the initial POST request')
-    parser.add_argument('--hass', nargs=2, metavar=('ENTITY_URL', 'TOKEN'), help='push to HASS')
-    return parser
+@dataclass
+class Args:
+    # FIXME: this should be directly in CLI but classyclick does not allow ordering arguments... split for now to control inheritance order...
+    username: str = classyclick.Argument()
+    auth: str = classyclick.Argument(metavar='BASE64_BASIC_STRING')
 
 
-def main(argv=None):
-    args = build_parser().parse_args(argv)
-    client = Client()
-    client.login(args.username, args.auth)
-    data = client.get_balance()
+@classyclick.command()
+class CLI(BasicCLI, Args):
+    def handle(self):
+        client = Client()
+        client.login(self.username, self.auth)
+        data = client.get_balance()
 
-    assert len(data['cards']) == 1
+        assert len(data['cards']) == 1
 
-    hass_data = {
-        'state': data['cards'][0]['availableCredit'] / 100,
-        'attributes': {
-            'unit_of_measurement': 'EUR',
-        },
-    }
+        hass_data = {
+            'state': data['cards'][0]['availableCredit'] / 100,
+            'attributes': {
+                'unit_of_measurement': 'EUR',
+            },
+        }
 
-    print(f"Balance: {hass_data['state']}")
-
-    if args.hass:
-        print(
-            requests.post(
-                args.hass[0],
-                json=hass_data,
-                headers={'Authorization': f'Bearer {args.hass[1]}'},
-            )
-        )
+        print(f"Balance: {hass_data['state']}")
+        return hass_data
 
 
 if __name__ == '__main__':
-    main()
+    CLI.click()
