@@ -25,12 +25,3 @@ RUN apt update \
     build-essential \
  && rm -rf /var/lib/apt/lists/*
 # =====================
-
-# === CHROMIUM BASE ===
-# Chrome dockerfile based on https://github.com/justinribeiro/dockerfiles/blob/master/chrome-headless/Dockerfile
-FROM baseslim-${TARGETARCH}${TARGETVARIANT} AS chromium
-
-RUN apt update \
- && apt install --no-install-recommends -y \
-    chromium-driver \
- && rm -rf /var/lib/apt/lists/*

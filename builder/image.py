@@ -126,20 +126,16 @@ class AlpineMixin(ImageMixin):
         }
 
 
+class AlpineNGMixin(AlpineMixin):
+    DOCKERFILE = 'docker/Dockerfile.ng'
+    PYTHON_VERSION = 3.13
+
+
 class GCCMixin(AlpineMixin, ImageMixin):
     FLAVOR = 'gcc'
 
 
-class ChromiumMixin(AlpineMixin, ImageMixin):
-    FLAVOR = 'chromium'
-
-
 class ChromiumLiteMixin(AlpineMixin, ImageMixin):
-    @property
-    def service(self):
-        assert super().service.endswith('lite')
-        return super().service[:-4]
-
     def get_full_tags(self):
         x = super().get_full_tags()[0]
         return [f'{x}-lite', f'{x}-lite-{self.get_revision()}']

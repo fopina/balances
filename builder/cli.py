@@ -1,16 +1,17 @@
 import argparse
-import os
 from functools import lru_cache
 from typing import Dict
 
 from .image import Image, ImageMixin
 
+ALL_CHOICE = 'all'
+
 
 class CLI:
     @lru_cache()
     def discover_images(self) -> Dict[str, any]:
-        images = {'all': Image}
-        images.update({c.__name__.lower(): c for c in [*ImageMixin.__subclasses__(), *Image.__subclasses__()]})
+        images = {ALL_CHOICE: Image}
+        images.update({c.__name__.lower(): c for c in [*Image.__subclasses__()]})
         return images
 
     def parser(self):
@@ -37,16 +38,11 @@ class CLI:
         images = self.discover_images()
         targets = []
 
-        if 'all' in args.name:
-            targets = [c for c in images.values() if issubclass(c, Image) and c != Image]
+        if ALL_CHOICE in args.name:
+            targets = [c for c in images.values() if c != Image]
         else:
             for n in args.name:
-                nc = images[n]
-                if issubclass(nc, ImageMixin) and not issubclass(nc, Image):
-                    for c in nc.__subclasses__():
-                        targets.append(c)
-                else:
-                    targets.append(nc)
+                targets.append(images[n])
 
         for n in targets:
             nc: Image = n(push=args.push, docker_extra=args.docker_extra)
