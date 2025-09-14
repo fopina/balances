@@ -1,7 +1,7 @@
 #!/usr/bin/env -S python3 -u
 
 from builder import cli
-from builder.image import AlpineMixin, AlpineNGMixin, BaseMixin, ChromiumLiteMixin, GCCMixin, Image
+from builder.image import AlpineMixin, AlpineNGMixin, BaseMixin, ChromiumLiteMixin, Image
 
 
 class MetaMask(AlpineMixin, Image):
@@ -44,7 +44,7 @@ class AforroNet(AlpineNGMixin, Image):
     pass
 
 
-class SnailTrail(GCCMixin, Image):
+class SnailTrail(AlpineNGMixin, Image):
     pass
 
 
@@ -62,10 +62,6 @@ class BaseAlpine(BaseMixin, Image):
 
 class BaseAlpineNG(BaseMixin, Image):
     PYTHON_VERSION = 3.13
-
-
-class BaseGCC(BaseMixin, Image):
-    FLAVOR = 'gcc'
 
 
 if __name__ == '__main__':

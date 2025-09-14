@@ -1,7 +1,11 @@
+from dataclasses import dataclass
+from typing import List
 from web3 import Web3
-from web3.middleware import geth_poa_middleware
+from web3.middleware import ExtraDataToPOAMiddleware
 
-from common.cli import BasicCLI, fx, hass
+from common.cli import fx, hass
+from common.cli_ng import BasicCLI
+import classyclick
 
 CONTRACT_RACE = '0x58B699642f2a4b91Dd10800Ef852427B719dB1f0'
 CONTRACT_SLIME = '0x5a15Bdcf9a3A8e799fa4381E666466a516F2d9C8'
@@ -93,7 +97,7 @@ class Client:
         if web3_provider_class is None:
             web3_provider_class = Web3.HTTPProvider
         self.web3 = Web3(web3_provider_class(web3_provider))
-        self.web3.middleware_onion.inject(geth_poa_middleware, layer=0)
+        self.web3.middleware_onion.inject(ExtraDataToPOAMiddleware, layer=0)
         self.wallet = wallet
 
     @property
@@ -127,15 +131,15 @@ class Client:
         for w in wallets:
             for contract in contracts:
                 calls.append(
-                    (contract.address, contract.encodeABI('balanceOf', args=(w,))),
+                    (contract.address, contract.encode_abi('balanceOf', args=(w,))),
                 )
             calls.append(
-                (self.multicall_contract.address, self.multicall_contract.encodeABI('getEthBalance', args=(w,)))
+                (self.multicall_contract.address, self.multicall_contract.encode_abi('getEthBalance', args=(w,)))
             )
-            calls.append((self.race_contract.address, self.race_contract.encodeABI('dailyRewardTracker', args=(w,))))
-            calls.append((self.race_contract.address, self.race_contract.encodeABI('compRewardTracker', args=(w,))))
+            calls.append((self.race_contract.address, self.race_contract.encode_abi('dailyRewardTracker', args=(w,))))
+            calls.append((self.race_contract.address, self.race_contract.encode_abi('compRewardTracker', args=(w,))))
             calls.append(
-                (self.mega_race_contract.address, self.mega_race_contract.encodeABI('rewardTracker', args=(w,)))
+                (self.mega_race_contract.address, self.mega_race_contract.encode_abi('rewardTracker', args=(w,)))
             )
         x = self.multicall_contract.functions.aggregate(calls).call()
         w_ind = 0
@@ -153,22 +157,32 @@ class Client:
         return results
 
 
-class CLI(fx.CryptoFXMixin, BasicCLI):
-    def default_parser(self, parser):
-        parser.add_argument(
-            '--hass', nargs='+', help='URL(s) to push the data to HASS - ONE FOR EACH WALLET SPECIFIED, SAME ORDER'
-        )
-        parser.add_argument('--hass-token', help='Token to push to HASS')
-        parser.add_argument('--insecure', action='store_true', help='Skip SSL validation')
+@dataclass
+class Args:
+    # FIXME: this should be directly in CLI but classyclick does not allow ordering arguments... split for now to control inheritance order...
+    wallet: List[str] = classyclick.Argument(type=str, nargs=-1, required=True)
+    hass: List[str] = classyclick.Option(
+        nargs=-1, help='URL(s) to push the data to HASS - ONE FOR EACH WALLET SPECIFIED, SAME ORDER'
+    )
+    hass_token: str = classyclick.Option(help='Token to push to HASS')
+    web3: str = classyclick.Option(default='https://api.avax.network/ext/bc/C/rpc', help='WEB3 Provider HTTP')
 
-    def extend_parser(self, parser):
-        parser.add_argument('wallet', nargs='+')
-        parser.add_argument('--web3', default='https://api.avax.network/ext/bc/C/rpc', help='WEB3 Provider HTTP')
 
-    def handle(self, args):
-        if args.hass:
-            assert args.hass_token is not None
-            assert len(args.hass) == len(args.wallet)
+@dataclass
+class OverArgs:
+    # override parent args
+    hass: List[str] = classyclick.Option(
+        multiple=True, help='URL(s) to push the data to HASS - ONE FOR EACH WALLET SPECIFIED, SAME ORDER'
+    )
+    hass_token: str = classyclick.Option(help='Token to push to HASS')
+
+
+@classyclick.command()
+class CLI(fx.CryptoFXMixin, OverArgs, BasicCLI, Args):
+    def handle(self):
+        if self.hass:
+            assert self.hass_token is not None
+            assert len(self.hass) == len(self.wallet)
 
         rates = self.get_crypto_fx_rate(
             ['snail-trail', 'avalanche-2'],
@@ -178,12 +192,10 @@ class CLI(fx.CryptoFXMixin, BasicCLI):
             },
         )
 
-        multicall_data = Client('', args.web3).multicall_balances(args.wallet)
+        multicall_data = Client('', self.web3).multicall_balances(self.wallet)
 
         r = []
-        for wallet in args.wallet:
-            client = Client(wallet, args.web3)
-
+        for wallet in self.wallet:
             hass_data = {
                 'state': 0,
                 'attributes': {
@@ -217,11 +229,11 @@ class CLI(fx.CryptoFXMixin, BasicCLI):
         return r
 
     def push_to_hass(self, data):
-        if self.args.hass:
+        if self.hass:
             for i, v in enumerate(data):
-                hu = self.args.hass[i]
-                hass.push_to_hass(hu, self.args.hass_token, v, verify=not self.args.insecure)
+                hu = self.hass[i]
+                hass.push_to_hass(hu, self.hass_token, v, verify=not self.insecure)
 
 
 if __name__ == '__main__':
-    CLI()()
+    CLI.click()

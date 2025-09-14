@@ -131,10 +131,6 @@ class AlpineNGMixin(AlpineMixin):
     PYTHON_VERSION = 3.13
 
 
-class GCCMixin(AlpineMixin, ImageMixin):
-    FLAVOR = 'gcc'
-
-
 class ChromiumLiteMixin(AlpineMixin, ImageMixin):
     def get_full_tags(self):
         x = super().get_full_tags()[0]

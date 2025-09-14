@@ -9,19 +9,4 @@ FROM ${BASE} AS basealpine-amd64
 
 # ==== CLEAN BASE ====
 FROM basealpine-${TARGETARCH}${TARGETVARIANT} AS alpine
-
-# =====================
-
-##### BASESLIM
-
-FROM ${BASESLIM} AS baseslim-arm64
-FROM ${BASESLIM} AS baseslim-amd64
-
-# === SLIM+GCC BASE ===
-FROM baseslim-${TARGETARCH}${TARGETVARIANT} AS gcc
-
-RUN apt update \
- && apt install --no-install-recommends -y \
-    build-essential \
- && rm -rf /var/lib/apt/lists/*
 # =====================
