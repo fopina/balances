@@ -12,11 +12,11 @@ class Degiro(AlpineNGMixin, Image):
     pass
 
 
-class KucoinX(AlpineMixin, Image):
+class KucoinX(AlpineNGMixin, Image):
     pass
 
 
-class Financas(AlpineMixin, Image):
+class Financas(AlpineNGMixin, Image):
     pass
 
 

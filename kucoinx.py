@@ -1,18 +1,24 @@
+from dataclasses import dataclass
 from kucoin.client import MarketData, User
 
-from common.cli import BasicCLI
+from common.cli_ng import BasicCLI
+import classyclick
 
 
-class CLI(BasicCLI):
-    def extend_parser(self, parser):
-        parser.add_argument('key')
-        parser.add_argument('secret')
-        parser.add_argument('passphrase')
-        parser.add_argument('--exclude-zeros', action='store_true', help='Do not report accounts/tokens with 0 balance')
+@dataclass
+class Args:
+    # FIXME: this should be directly in CLI but classyclick does not allow ordering arguments... split for now to control inheritance order...
+    key: str = classyclick.Argument()
+    secret: str = classyclick.Argument()
+    passphrase: str = classyclick.Argument()
+    exclude_zeros: bool = classyclick.Option(help='Do not report accounts/tokens with 0 balance')
 
-    def handle(self, args):
+
+@classyclick.command()
+class CLI(BasicCLI, Args):
+    def handle(self):
         prices = MarketData().get_fiat_price()
-        client = User(args.key, args.secret, args.passphrase)
+        client = User(self.key, self.secret, self.passphrase)
         accounts = client.get_account_list()
 
         hass_data = {
@@ -24,7 +30,7 @@ class CLI(BasicCLI):
         accum = {}
 
         for account in accounts:
-            if account['balance'] == '0' and args.exclude_zeros:
+            if account['balance'] == '0' and self.exclude_zeros:
                 continue
             accum[account['currency']] = float(accum.get(account['currency'], 0)) + float(account['balance'])
 
@@ -58,4 +64,4 @@ class CLI(BasicCLI):
 
 
 if __name__ == '__main__':
-    CLI()()
+    CLI.click()
