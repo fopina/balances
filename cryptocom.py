@@ -1,6 +1,9 @@
+from dataclasses import dataclass
 import requests
 
-from common.cli import BasicCLI
+from common.cli_ng import BasicCLI
+import classyclick
+import click
 
 
 class ClientError(Exception):
@@ -59,52 +62,29 @@ class MissionClient(Client):
         return self.post('mission/checkin', json={'mission_id': mission_id}).json()
 
 
-class CLI(BasicCLI):
-    def extend_parser(self, parser):
-        parser.add_argument('track_id')
-        parser.add_argument('token')
+@dataclass
+class Args:
+    # FIXME: this should be directly in CLI but classyclick does not allow ordering arguments... split for now to control inheritance order...
+    track_id: str = classyclick.Argument()
+    token: str = classyclick.Argument()
+    skip_mission: bool = classyclick.Option(help='Skip diamond collections, just scrape balance')
 
-    def handle(self, args):
-        client = Client(args.track_id, args.token)
-        mclient = MissionClient(args.track_id, args.token)
-        d = mclient.center()
-        vault_diamonds = int(d['data']['diamond_balance']['vault_amount'][0]['amount'])
-        redeem_balance = int(d['data']['redeem_balances']['total_amount']['amount'])
-        if redeem_balance > 0:
-            print('redeem diamonds')
-            dd = mclient.redeem()
-            if not dd['ok']:
-                raise Exception(d)
 
-        for track in d['data']['tracks']:
-            if track['track_name'] != 'Daily':
-                continue
-            if not track['track_active']:
-                continue
-            print('activate track')
-            d = mclient.track_activate(track['track_id'])
-            if not d['ok']:
-                raise Exception(d)
-            for m in track['missions']:
-                if m['mission_name_translation_key'] == 'mission_detail__title_check_in':
-                    if m['streak_complete']:
-                        continue
-                    print('mission: checking in')
-                    d = mclient.mission_checkin(m['mission_id'])
-                    if not d['ok']:
-                        raise Exception(d)
-
+@classyclick.command()
+class CLI(BasicCLI, Args):
+    def handle(self):
         hass_data = {
             'state': 0,
             'attributes': {
                 'unit_of_measurement': 'EUR',
-                'diamonds': vault_diamonds,
             },
         }
-        print(f"diamonds: {vault_diamonds}")
 
+        client = Client(self.track_id, self.token)
         try:
             tokens = client.allocations()
+            if not tokens['ok'] and tokens['error'] == 'unauthorized':
+                raise click.ClickException('Login expired')
 
             for k in tokens['coins']:
                 _id = k['id'].lower()
@@ -131,9 +111,41 @@ class CLI(BasicCLI):
         hass_data['attributes']['earn_val'] = eur
         print(f'earn: {eur}')
 
+        if not self.skip_mission:
+            mclient = MissionClient(self.track_id, self.token)
+            d = mclient.center()
+            vault_diamonds = int(d['data']['diamond_balance']['vault_amount'][0]['amount'])
+            redeem_balance = int(d['data']['redeem_balances']['total_amount']['amount'])
+            if redeem_balance > 0:
+                print('redeem diamonds')
+                dd = mclient.redeem()
+                if not dd['ok']:
+                    raise Exception(d)
+
+            for track in d['data']['tracks']:
+                if track['track_name'] != 'Daily':
+                    continue
+                if not track['track_active']:
+                    continue
+                print('activate track')
+                d = mclient.track_activate(track['track_id'])
+                if not d['ok']:
+                    raise Exception(d)
+                for m in track['missions']:
+                    if m['mission_name_translation_key'] == 'mission_detail__title_check_in':
+                        if m['streak_complete']:
+                            continue
+                        print('mission: checking in')
+                        d = mclient.mission_checkin(m['mission_id'])
+                        if not d['ok']:
+                            raise Exception(d)
+
+            hass_data['attributes']['diamonds'] = vault_diamonds
+            print(f"diamonds: {vault_diamonds}")
+
         print(f"\nTotal: {hass_data['state']}")
         return hass_data
 
 
 if __name__ == '__main__':
-    CLI()()
+    CLI.click()
