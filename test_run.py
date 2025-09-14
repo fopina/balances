@@ -21,19 +21,26 @@ if args.script.endswith('.py'):
 
 assert args.script in PARAM_MAP, 'not configured'
 
-s = json.loads(subprocess.check_output(['rbw', 'get', '--raw', PARAM_MAP[args.script][0]]))
+secret_key = PARAM_MAP[args.script][0]
+
+if secret_key:
+    secrets = json.loads(subprocess.check_output(['rbw', 'get', '--raw', secret_key]))
 
 s_args = []
 for s_arg in PARAM_MAP[args.script][1]:
-    if s_arg in ('username', 'password'):
-        s_args.append(s['data'][s_arg])
-    else:
-        for f in s['fields']:
-            if f['name'] == s_arg:
-                s_args.append(f['value'])
-                break
+    if s_arg[:2] == 's:':
+        s_arg = s_arg[2:]
+        if s_arg in ('username', 'password'):
+            s_args.append(secrets['data'][s_arg])
         else:
-            assert False, f'{s_arg} field not found'
+            for f in secrets['fields']:
+                if f['name'] == s_arg:
+                    s_args.append(f['value'])
+                    break
+            else:
+                assert False, f'{s_arg} field not found'
+    else:
+        s_args.append(s_arg)
 
 try:
     if args.docker:
