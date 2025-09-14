@@ -8,7 +8,7 @@ class MetaMask(AlpineMixin, Image):
     pass
 
 
-class Degiro(AlpineMixin, Image):
+class Degiro(AlpineNGMixin, Image):
     pass
 
 

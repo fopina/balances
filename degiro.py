@@ -1,6 +1,8 @@
+from dataclasses import dataclass
 import requests
 
-from common.cli import BasicCLI, otp
+from common.cli_ng import BasicCLI, otp
+import classyclick
 
 
 class ClientError(Exception):
@@ -128,17 +130,21 @@ class VWDClient(Client):
         return r
 
 
-class CLI(otp.OTPMixin, BasicCLI):
-    def extend_parser(self, parser):
-        parser.add_argument('username')
-        parser.add_argument('password')
-        parser.add_argument('-p', '--pin', help='use device login with this pin code (password should be device id)')
-        parser.add_argument('-z', '--zero', action='store_true', help='include portfolio with 0 shares')
+@dataclass
+class Args:
+    # FIXME: this should be directly in CLI but classyclick does not allow ordering arguments... split for now to control inheritance order...
+    username: str = classyclick.Argument()
+    password: str = classyclick.Argument()
+    pin: str = classyclick.Option('-p', help='use device login with this pin code (password should be device id)')
+    zero: bool = classyclick.Option('-z', help='include portfolio with 0 shares')
 
-    def handle(self, args):
+
+@classyclick.command()
+class CLI(otp.OTPMixin, BasicCLI, Args):
+    def handle(self):
         client = Client()
 
-        client.login(args.username, args.password, otp=self.otp_holder(args), pin_code=args.pin)
+        client.login(self.username, self.password, otp=self.otp_holder(), pin_code=self.pin)
         client.get_config()
 
         portfolio = client.get_portfolio()
@@ -154,7 +160,7 @@ class CLI(otp.OTPMixin, BasicCLI):
         for x in portfolio:
             if x['positionType'] != 'PRODUCT':
                 continue
-            if x['size'] == 0 and not args.zero:
+            if x['size'] == 0 and not self.zero:
                 continue
             key = f"{x['product']['symbol']}_{x['product']['productType']}".lower()
             keyv = f'{key}_val'
@@ -175,7 +181,7 @@ class CLI(otp.OTPMixin, BasicCLI):
 
         # update PRODUCT values with VWD real time data
         vclient = client.vwd_client()
-        assert vclient.set_up(vwd_ids.keys()) == True
+        assert vclient.set_up(vwd_ids.keys())
         for upk, upv in vclient.updates().items():
             key = vwd_ids[upk]
             products[f'{key}_val'] = products[key] * upv
@@ -197,4 +203,4 @@ class CLI(otp.OTPMixin, BasicCLI):
 
 
 if __name__ == '__main__':
-    CLI()()
+    CLI.click()

@@ -1,1 +1,1 @@
-onetimepass==1.0.1
+-r requirements_common_otp.txt

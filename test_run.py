@@ -28,6 +28,9 @@ if secret_key:
 
 s_args = []
 for s_arg in PARAM_MAP[args.script][1]:
+    if isinstance(s_arg, list):
+        flag, s_arg = s_arg
+        s_args.append(flag)
     if s_arg[:2] == 's:':
         s_arg = s_arg[2:]
         if s_arg in ('username', 'password'):
