@@ -1,0 +1,2 @@
+requests==2.32.5
+classyclick==0.6.2

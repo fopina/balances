@@ -1,7 +1,7 @@
 #!/usr/bin/env -S python3 -u
 
 from builder import cli
-from builder.image import AlpineMixin, BaseMixin, ChromiumLiteMixin, GCCMixin, Image
+from builder.image import AlpineMixin, AlpineNGMixin, BaseMixin, ChromiumLiteMixin, GCCMixin, Image
 
 
 class MetaMask(AlpineMixin, Image):
@@ -40,7 +40,7 @@ class CryptoCom(AlpineMixin, Image):
     pass
 
 
-class AforroNet(AlpineMixin, Image):
+class AforroNet(AlpineNGMixin, Image):
     pass
 
 
@@ -60,8 +60,8 @@ class BaseAlpine(BaseMixin, Image):
     pass
 
 
-class BaseAlpine312(BaseMixin, Image):
-    PYTHON_VERSION = 3.12
+class BaseAlpineNG(BaseMixin, Image):
+    PYTHON_VERSION = 3.13
 
 
 class BaseGCC(BaseMixin, Image):

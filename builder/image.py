@@ -126,6 +126,11 @@ class AlpineMixin(ImageMixin):
         }
 
 
+class AlpineNGMixin(AlpineMixin):
+    DOCKERFILE = 'docker/Dockerfile.ng'
+    PYTHON_VERSION = 3.13
+
+
 class GCCMixin(AlpineMixin, ImageMixin):
     FLAVOR = 'gcc'
 

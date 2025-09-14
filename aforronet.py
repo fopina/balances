@@ -1,8 +1,9 @@
+from dataclasses import dataclass
 import re
 
 import requests
-
-from common.cli import BasicCLI
+import classyclick
+from common.cli_ng import BasicCLI
 
 TAG_RE = re.compile(r'<.+?>')
 
@@ -31,6 +32,9 @@ class Client(requests.Session):
 
     def login(self, username, password, nif):
         r = self.get('Iimf.AforroNet.UI/services/login/Login.aspx')
+        if r.status_code == 503:
+            # temporarily printout the content of these errors to better handle them
+            print(r.content)
         r.raise_for_status()
 
         data = {
@@ -103,17 +107,21 @@ class Client(requests.Session):
         return subs
 
 
-class CLI(BasicCLI):
-    def extend_parser(self, parser):
-        parser.add_argument('username')
-        parser.add_argument('password')
-        parser.add_argument('nif')
+@dataclass
+class Args:
+    # FIXME: this should be directly in CLI but classyclick does not allow ordering arguments... split for now to control inheritance order...
+    username: str = classyclick.Argument()
+    password: str = classyclick.Argument()
+    nif: str = classyclick.Argument()
 
-    def handle(self, args):
+
+@classyclick.command()
+class CLI(BasicCLI, Args):
+    def handle(self):
         client = Client()
-        if args.insecure:
+        if self.insecure:
             client.verify = False
-        client.login(args.username, args.password, args.nif)
+        client.login(self.username, self.password, self.nif)
         subs = client.daily_statement()
 
         hass_data = {
@@ -138,4 +146,4 @@ class CLI(BasicCLI):
 
 
 if __name__ == '__main__':
-    CLI()()
+    CLI.click()
