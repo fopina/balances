@@ -1,13 +1,15 @@
+from dataclasses import dataclass
 import json
 import logging
 import time
 from pathlib import Path
+import classyclick
 
 import requests
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.common.by import By as By
 
-from common.cli.selenium import SeleniumCLI
+from common.cli_ng.selenium import SeleniumCLI
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger(__name__)
@@ -39,22 +41,24 @@ class Client(requests.Session):
         return self.get('sso/validate').json()
 
 
-class CLI(SeleniumCLI):
-    def extend_parser(self, parser):
-        parser.add_argument("username")
-        parser.add_argument("password")
-        parser.add_argument(
-            "-f",
-            "--token-file",
-            type=Path,
-            default="ibfetch.local",
-            help="File to store current cookies",
-        )
-        parser.add_argument('--screenshot', action='store_true', help='Take screenshot on exception')
+@dataclass
+class Args:
+    # FIXME: this should be directly in CLI but classyclick does not allow ordering arguments... split for now to control inheritance order...
+    username: str = classyclick.Argument()
+    password: str = classyclick.Argument()
+    token_file: Path = classyclick.Option(
+        '-f',
+        default="ibfetch.local",
+        help="File to store current cookies",
+    )
+    screenshot: bool = classyclick.Option(help='Take screenshot on exception')
 
-    def get_client(self, args):
-        if args.token_file.exists():
-            cookies = json.loads(args.token_file.read_text())
+
+@classyclick.command()
+class CLI(SeleniumCLI, Args):
+    def get_client(self):
+        if self.token_file.exists():
+            cookies = json.loads(self.token_file.read_text())
             client = Client(cookies)
             try:
                 client.validate()
@@ -77,7 +81,7 @@ class CLI(SeleniumCLI):
                 print(f'IBFETCH: try {tries}: {e}')
                 time.sleep(5)
 
-        with args.token_file.open("w") as f:
+        with self.token_file.open("w") as f:
             f.write(json.dumps(cookies))
 
         client = Client(cookies)
@@ -97,9 +101,9 @@ class CLI(SeleniumCLI):
             el = driver.find_element(By.NAME, "username")
             time.sleep(1)
             logger.info("found login form")
-            el.send_keys(self.args.username)
+            el.send_keys(self.username)
             el = driver.find_element(By.NAME, "password")
-            el.send_keys(self.args.password)
+            el.send_keys(self.password)
             el.submit()
 
             el = driver.find_element(
@@ -112,8 +116,8 @@ class CLI(SeleniumCLI):
             cookies.update({c['name']: c['value'] for c in driver.get_cookies()})
         except ClientError:
             raise
-        except Exception as e:
-            if self.args.screenshot:
+        except Exception:
+            if self.screenshot:
                 driver.save_screenshot('ibfetch-debug.png')
             print(f'== SOURCE ==\n{driver.page_source}\n== SOURCE END ==')
             raise
@@ -121,8 +125,8 @@ class CLI(SeleniumCLI):
             driver.quit()
         return cookies
 
-    def handle(self, args):
-        client = self.get_client(args)
+    def handle(self):
+        client = self.get_client()
         r = client.get('portfolio/accounts').json()
         acc_id = r[0]['accountId']
 
@@ -153,4 +157,4 @@ class CLI(SeleniumCLI):
 
 
 if __name__ == "__main__":
-    CLI()()
+    CLI.click()

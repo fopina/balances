@@ -67,12 +67,6 @@ class MyDriver(webdriver.Chrome, ChromiumHelperMixin):
             self.set_user_agent(user_agent)
 
 
-def selenium_parser(parser):
-    parser.add_argument("--headful", action="store_true", help="Run Chromium WITHOUT headless mode")
-    parser.add_argument("--grid", type=str, help="Use remote chromium (in a selenium grid)")
-    parser.add_argument("--remote-debugging-port", type=int, help="chromium remote debugging port")
-
-
 # monkeypatch WebDriverException to not print out stacktrace...!
 from selenium.common import exceptions
 
