@@ -20,7 +20,7 @@ class Financas(AlpineMixin, Image):
     pass
 
 
-class CaixaBreak(AlpineMixin, Image):
+class CaixaBreak(AlpineNGMixin, Image):
     pass
 
 
