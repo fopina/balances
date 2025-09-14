@@ -4,7 +4,7 @@ from builder import cli
 from builder.image import AlpineMixin, AlpineNGMixin, BaseMixin, ChromiumLiteMixin, Image
 
 
-class MetaMask(AlpineMixin, Image):
+class MetaMask(AlpineNGMixin, Image):
     pass
 
 
