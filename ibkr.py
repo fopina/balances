@@ -20,7 +20,11 @@ logger = logging.getLogger(__name__)
 
 
 class Client(requests.Session):
+<<<<<<< HEAD
     URL = 'https://www.interactivebrokers.co.uk/portal.proxy/v1/portal/'
+=======
+    URL = "https://www.interactivebrokers.ie/portal.proxy/v1/portal/"
+>>>>>>> fe3630b (x)
 
     def __init__(self, cookies):
         super().__init__()
@@ -48,8 +52,13 @@ class Args:
     password: str = classyclick.Argument()
     token_file: Path = classyclick.Option(
         '-f',
+<<<<<<< HEAD
         default='ibfetch.local',
         help='File to store current cookies',
+=======
+        default=".ibkr.local",
+        help="File to store current cookies",
+>>>>>>> fe3630b (x)
     )
     screenshot: bool = classyclick.Option(help='Take screenshot on exception')
 
@@ -60,6 +69,7 @@ class CLI(SeleniumCLI, Args):
         if self.token_file.exists():
             cookies = json.loads(self.token_file.read_text())
             client = Client(cookies)
+            client.verify = False
             try:
                 client.validate()
                 return client
@@ -91,12 +101,21 @@ class CLI(SeleniumCLI, Args):
         driver.implicitly_wait(20)
         cookies = {}
         try:
+<<<<<<< HEAD
             driver.get('https://www.interactivebrokers.co.uk/sso/Login')
             el = driver.find_element(By.NAME, 'username')
             # accept privacy cookies
             driver.add_cookie({'name': 'IB_PRIV_PREFS', 'value': '0%7C0%7C0'})
             driver.get('https://www.interactivebrokers.co.uk/sso/Login')
             el = driver.find_element(By.NAME, 'username')
+=======
+            driver.get("https://www.interactivebrokers.ie/sso/Login")
+            el = driver.find_element(By.NAME, "username")
+            # accept privacy cookies
+            driver.add_cookie({"name": "IB_PRIV_PREFS", "value": "0%7C0%7C0"})
+            driver.get("https://www.interactivebrokers.ie/sso/Login")
+            el = driver.find_element(By.NAME, "username")
+>>>>>>> fe3630b (x)
             time.sleep(1)
             logger.info('found login form')
             el.send_keys(self.username)
