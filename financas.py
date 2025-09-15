@@ -5,6 +5,7 @@ import re
 import time
 from datetime import datetime
 
+import click
 import requests
 import classyclick
 from requests.adapters import HTTPAdapter
@@ -13,10 +14,6 @@ from urllib3.util.retry import Retry
 from common.cli_ng import BasicCLI
 
 logger = logging.getLogger(__name__)
-
-
-class ClientError(Exception):
-    """errors raised by client validations"""
 
 
 class Client(requests.Session):
@@ -38,7 +35,7 @@ class Client(requests.Session):
         r.raise_for_status()
         m = re.findall(r'<input type="hidden" name="_csrf" value="(.*?)"/>', r.text)
         if not m:
-            raise ClientError('failed to get csrf token')
+            raise click.ClickException('failed to get csrf token')
         r = self.post(
             'https://www.acesso.gov.pt/jsp/submissaoFormularioLogin',
             data={
@@ -55,11 +52,11 @@ class Client(requests.Session):
         if '<div class="error-message">' in r.text:
             m = re.findall(r'<div class="error-message">(.*?)</div>', r.text)
             if m:
-                raise ClientError(f'login error: {m[0]}')
-            raise ClientError('login error')
+                raise click.ClickException(f'login error: {m[0]}')
+            raise click.ClickException('login error')
         m = re.findall(r'<input type="hidden" name="(.*?)" value="(.*?)">', r.text)
         if not m:
-            raise ClientError('failed to login')
+            raise click.ClickException('failed to login')
 
         for _try in range(10):
             # flaky faturas.portaldasfinancas.gov.pt returning 404 sometimes
@@ -93,7 +90,7 @@ class Client(requests.Session):
         r.raise_for_status()
         data = r.json()
         if not data['success']:
-            raise ClientError(html.unescape('\n'.join(data['messages']['error'])))
+            raise click.ClickException(html.unescape('\n'.join(data['messages']['error'])))
 
         return r.json()['totalElementos']
 
@@ -140,7 +137,7 @@ class CLI(BasicCLI, Args):
             logger.error('empty stats, try %d', _try)
             time.sleep(1)
         else:
-            raise ClientError('unable to parse stats from dashboard')
+            raise click.ClickException('unable to parse stats from dashboard')
 
         pending = client.pending_invoices()
         print(f'Pending: {pending}')

@@ -1,12 +1,9 @@
 from dataclasses import dataclass
+import click
 import requests
 
 from common.cli_ng import BasicCLI, otp
 import classyclick
-
-
-class ClientError(Exception):
-    """errors raised by client validations"""
 
 
 class Client(requests.Session):
@@ -46,12 +43,12 @@ class Client(requests.Session):
             # success
             self._session = d['sessionId']
         elif d['status'] == 3:
-            raise ClientError('invalid login/otp')
+            raise click.ClickException('invalid login/otp')
         elif d['status'] == 6:
             # otpNeeded - required
-            raise ClientError('either otp or otp_secret are required')
+            raise click.ClickException('either otp or otp_secret are required')
         else:
-            raise ClientError('unexpected status', d)
+            raise click.ClickException('unexpected status', d)
         self._session_id = d['sessionId']
 
     def get_config(self):

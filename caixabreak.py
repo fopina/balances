@@ -1,13 +1,8 @@
-import argparse
 from dataclasses import dataclass
 
 import requests
 import classyclick
 from common.cli_ng import BasicCLI
-
-
-class ClientError(Exception):
-    """errors raised by client validations"""
 
 
 class Client(requests.Session):

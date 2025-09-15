@@ -6,10 +6,6 @@ import classyclick
 import click
 
 
-class ClientError(Exception):
-    """errors raised by client validations"""
-
-
 class Client(requests.Session):
     URL = 'https://app.mona.co/'
 

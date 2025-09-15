@@ -1,15 +1,12 @@
 from dataclasses import dataclass
 import re
 
+import click
 import requests
 import classyclick
 from common.cli_ng import BasicCLI
 
 TAG_RE = re.compile(r'<.+?>')
-
-
-class ClientError(Exception):
-    """errors raised by client validations"""
 
 
 class Client(requests.Session):
@@ -46,26 +43,26 @@ class Client(requests.Session):
 
         m = re.findall(r'Indique o <strong>(\d+).*</strong> e <strong>(\d+).*</strong>', r.text)
         if not m:
-            raise ClientError('NIF positions not found')
+            raise click.ClickException('NIF positions not found')
         pos = list(map(lambda x: nif[int(x) - 1], m[0]))
         data['dlPrim_Pos'] = pos[0]
         data['dlSeg_Pos'] = pos[1]
 
         m = re.findall(r'<input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="(.*?)" />', r.text)
         if not m:
-            raise ClientError('__VIEWSTATE not found')
+            raise click.ClickException('__VIEWSTATE not found')
         data['__VIEWSTATE'] = m[0]
 
         m = re.findall(
             r'<input type="hidden" name="__VIEWSTATEGENERATOR" id="__VIEWSTATEGENERATOR" value="(.*?)" />', r.text
         )
         if not m:
-            raise ClientError('__VIEWSTATEGENERATOR not found')
+            raise click.ClickException('__VIEWSTATEGENERATOR not found')
         data['__VIEWSTATEGENERATOR'] = m[0]
 
         m = re.findall(r'<input type="hidden" name="__EVENTVALIDATION" id="__EVENTVALIDATION" value="(.*?)" />', r.text)
         if not m:
-            raise ClientError('__EVENTVALIDATION not found')
+            raise click.ClickException('__EVENTVALIDATION not found')
         data['__EVENTVALIDATION'] = m[0]
 
         r = self.post('Iimf.AforroNet.UI/services/login/Login.aspx', data=data)
@@ -81,7 +78,7 @@ class Client(requests.Session):
                 msg = TAG_RE.sub(' ', msg)
                 msg = re.sub(r'\s\s+', '\n', msg)
                 msg = '; '.join(msg.strip().splitlines())
-            raise ClientError(msg)
+            raise click.ClickException(msg)
 
     def daily_statement(self):
         r = self.get('Iimf.AforroNet.UI/services/Consulta/Saldo.aspx')
