@@ -9,7 +9,7 @@ from .. import hass
 class BasicCLI:
     DEFAULT_USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36'
     insecure: bool = classyclick.Option(help='Skip SSL validation')
-    hass: str = classyclick.Option(nargs=2, metavar=('ENTITY_URL', 'TOKEN'), help='push to HASS')
+    hass: str = classyclick.Option(nargs=2, metavar='ENTITY_URL TOKEN', help='push to HASS')
 
     def handle(self):
         raise NotImplementedError('subclass must implement this')
