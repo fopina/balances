@@ -3,6 +3,7 @@
 Collect balances using https://portfolio.metamask.io/
 This allows collecting multiple tokens without knowing contracts in advance for multiple chains.
 """
+from collections import defaultdict
 import requests
 
 from common.cli_ng import BasicCLI
@@ -11,8 +12,6 @@ from dataclasses import dataclass
 
 
 class Client(requests.Session):
-    URL = 'https://account.metafi.codefi.network/'
-
     def __init__(self):
         super().__init__()
         self.headers.update(
@@ -22,12 +21,24 @@ class Client(requests.Session):
             }
         )
 
-    def request(self, method, url, *args, **kwargs):
-        url = f"{self.URL}{url.lstrip('/')}"
-        return super().request(method, url, *args, **kwargs)
+    def accounts(self, wallet, networks: list[int] = None):
+        if networks:
+            networks = ','.join(map(str, networks))
+        r = self.get(
+            f'https://accounts.api.cx.metamask.io/v2/accounts/{wallet}/balances', params={'networks': networks}
+        )
+        r.raise_for_status()
+        return r.json()
 
-    def accounts(self, wallet, chain_id, include_prices=True):
-        r = self.get(f'accounts/{wallet}', params={'chainId': chain_id, 'includePrices': include_prices})
+    def prices(self, network: int, token_addresses: list[str], currency='usd', include_market_data=False):
+        r = self.get(
+            f'https://price.api.cx.metamask.io/v2/chains/{network}/spot-prices',
+            params={
+                'tokenAddresses': ','.join(token_addresses),
+                'vsCurrency': currency,
+                'includeMarketData': 'true' if include_market_data else 'false',
+            },
+        )
         r.raise_for_status()
         return r.json()
 
@@ -36,7 +47,7 @@ class Client(requests.Session):
 class Args:
     # FIXME: this should be directly in CLI but classyclick does not allow ordering arguments... split for now to control inheritance order...
     wallet: str = classyclick.Argument()
-    chain_id: int = classyclick.Argument()
+    chain_id: list[int] = classyclick.Option('-c', multiple=True, help='Restrict to these chain_ids - default is all')
     no_prices: bool = classyclick.Option(help='Do not include prices for the tokens')
 
 
@@ -51,19 +62,31 @@ class CLI(BasicCLI, Args):
         }
 
         c = Client()
-        data = c.accounts(self.wallet, self.chain_id, include_prices=not self.no_prices)
+        data = c.accounts(self.wallet, networks=self.chain_id)
 
-        print(f'Data updated at: {data["updatedAt"]}')
-        _s = data['nativeBalance']['symbol'].lower()
-        hass_data['attributes'][f'{_s}_amt'] = data['nativeBalance']['balance']
-        hass_data['attributes'][f'{_s}_val'] = data['nativeBalance']['value']['marketValue']
+        if not self.no_prices:
+            per_chain = defaultdict(list)
+            for token in data['balances']:
+                per_chain[token['chainId']].append(token['address'])
+            prices = {}
+            for k, v in per_chain.items():
+                price_data = c.prices(k, v)
+                for kk, vv in price_data.items():
+                    prices[(k, kk)] = vv['usd']
+        else:
+            prices = {}
 
-        for token_balance in data['tokenBalances']:
+        total = 0.0
+        for token_balance in data['balances']:
             _s = token_balance['symbol'].lower()
             hass_data['attributes'][f'{_s}_amt'] = token_balance['balance']
-            hass_data['attributes'][f'{_s}_val'] = token_balance['value']['marketValue']
+            k = (token_balance['chainId'], token_balance['address'])
+            if k in prices:
+                price = prices[k] * float(token_balance['balance'])
+                hass_data['attributes'][f'{_s}_val'] = price
+                total += price
 
-        hass_data['state'] = data['value']['marketValue']
+        hass_data['state'] = price
 
         self.pprint(hass_data)
         return hass_data
