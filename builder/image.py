@@ -136,7 +136,9 @@ class BaseMixin(AlpineMixin, ImageMixin):
         return f'base-{self.PYTHON_VERSION}-{self.FLAVOR}'
 
     def get_revision(self) -> str:
-        return str(len(subprocess.check_output(['git', 'log', '--oneline', 'docker']).decode().splitlines()))
+        return str(
+            len(subprocess.check_output(['git', 'log', '--oneline', 'docker'], cwd=self.CWD).decode().splitlines())
+        )
 
     def get_build_args(self):
         return {
