@@ -93,7 +93,7 @@ class AlpineMixin(ImageMixin):
     IMAGE = 'balances'
     DOCKERFILE = 'docker/Dockerfile'
     CONTEXT = '.'
-    PYTHON_VERSION = 3.9
+    PYTHON_VERSION = 3.13
     FLAVOR = 'alpine'
 
     _service = None
@@ -126,18 +126,11 @@ class AlpineMixin(ImageMixin):
         }
 
 
-class AlpineNGMixin(AlpineMixin):
-    DOCKERFILE = 'docker/Dockerfile.ng'
-    PYTHON_VERSION = 3.13
-
-
 class BaseMixin(AlpineMixin, ImageMixin):
     IMAGE_BASE = 'ghcr.io/fopina'
     IMAGE = 'balances'
     DOCKERFILE = 'docker/Dockerfile.base'
     CONTEXT = '.'
-    PYTHON_VERSION = 3.9
-    FLAVOR = 'alpine'
 
     def get_tag(self):
         return f'base-{self.PYTHON_VERSION}-{self.FLAVOR}'

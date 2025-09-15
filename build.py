@@ -1,38 +1,38 @@
 #!/usr/bin/env -S python3 -u
 
 from builder import cli
-from builder.image import AlpineNGMixin, BaseMixin, Image
+from builder.image import AlpineMixin, BaseMixin, Image
 
 
-class MetaMask(AlpineNGMixin, Image):
+class MetaMask(AlpineMixin, Image):
     pass
 
 
-class Degiro(AlpineNGMixin, Image):
+class Degiro(AlpineMixin, Image):
     pass
 
 
-class KucoinX(AlpineNGMixin, Image):
+class KucoinX(AlpineMixin, Image):
     pass
 
 
-class Financas(AlpineNGMixin, Image):
+class Financas(AlpineMixin, Image):
     pass
 
 
-class CaixaBreak(AlpineNGMixin, Image):
+class CaixaBreak(AlpineMixin, Image):
     pass
 
 
-class CryptoCom(AlpineNGMixin, Image):
+class CryptoCom(AlpineMixin, Image):
     pass
 
 
-class AforroNet(AlpineNGMixin, Image):
+class AforroNet(AlpineMixin, Image):
     pass
 
 
-class IBFetch(AlpineNGMixin, Image):
+class IBFetch(AlpineMixin, Image):
     pass
 
 
