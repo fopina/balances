@@ -27,16 +27,14 @@ class Client(requests.Session):
     def request(self, method, url, *args, **kwargs):
         url = f"{self.URL}{url.lstrip('/')}"
         r = super().request(method, url, *args, **kwargs)
+        if r.status_code == 503:
+            # temporarily printout the content of these errors to better handle them
+            print(r.content)
         r.raise_for_status()
         return r
 
     def login(self, username, password, nif):
         r = self.get('Iimf.AforroNet.UI/services/login/Login.aspx')
-        if r.status_code == 503:
-            # temporarily printout the content of these errors to better handle them
-            print(r.content)
-        r.raise_for_status()
-
         data = {
             '__EVENTTARGET': '',
             '__EVENTARGUMENT': '',

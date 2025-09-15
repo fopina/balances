@@ -2,7 +2,7 @@ import argparse
 from functools import lru_cache
 from typing import Dict
 
-from .image import Image, ImageMixin
+from .image import Image
 
 ALL_CHOICE = 'all'
 
