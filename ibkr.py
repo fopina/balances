@@ -4,7 +4,11 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 
+<<<<<<< HEAD:ibfetch.py
 import classyclick
+=======
+import click
+>>>>>>> 391abf1 (x):ibkr.py
 import requests
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.common.by import By as By
@@ -13,10 +17,6 @@ from common.cli_ng.selenium import SeleniumCLI
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
 logger = logging.getLogger(__name__)
-
-
-class ClientError(Exception):
-    """errors raised by client validations"""
 
 
 class Client(requests.Session):
@@ -72,8 +72,6 @@ class CLI(SeleniumCLI, Args):
                 cookies = self.login_and_token()
                 print(f'IBFETCH: LOGIN SUCCESS ON TRY {tries}')
                 break
-            except ClientError:
-                raise
             except WebDriverException as e:
                 tries += 1
                 if tries == 3:
@@ -110,11 +108,11 @@ class CLI(SeleniumCLI, Args):
                 By.CSS_SELECTOR, "a[href='#/dashboard/positions'],div.xyz-errormessage:not(:empty)"
             )
             if el.tag_name == 'div':
-                raise ClientError(el.get_attribute('innerHTML'))
+                raise click.ClickException(el.get_attribute('innerHTML'))
             time.sleep(1)
             logger.info('logged in!')
             cookies.update({c['name']: c['value'] for c in driver.get_cookies()})
-        except ClientError:
+        except click.ClickException:
             raise
         except Exception:
             if self.screenshot:

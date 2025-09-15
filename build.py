@@ -32,7 +32,7 @@ class AforroNet(AlpineMixin, Image):
     pass
 
 
-class IBFetch(AlpineMixin, Image):
+class IBKR(AlpineMixin, Image):
     pass
 
 
