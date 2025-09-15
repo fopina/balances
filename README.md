@@ -15,7 +15,7 @@ Check each module for documentation (comments on top) on how to use it.
 * ~~[Luna20](luna20.py) - [Terra 2.0](https://station.terra.money/) project~~
 * ~~[Celsius](celsius.py) - [Celsius](https://celsius.network/) (RIP)~~
 * [Crypto.com](cryptocom.py) - [website](https://crypto.com/) but this is for the `app` account, not the exchange
-* [Kucoin](kucoinx.py) - [website](https://kucoin.com/)
+* [Kucoin](kucoin.py) - [website](https://kucoin.com/)
 * ~~[Plutus](plutus.py) - [website](https://plutus.it/)~~
 
 ### Stocks

@@ -12,7 +12,7 @@ class Degiro(AlpineMixin, Image):
     pass
 
 
-class KucoinX(AlpineMixin, Image):
+class Kucoin(AlpineMixin, Image):
     pass
 
 
