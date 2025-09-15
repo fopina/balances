@@ -56,6 +56,10 @@ class MissionClient(Client):
 
     def mission_checkin(self, mission_id):
         return self.post('mission/checkin', json={'mission_id': mission_id}).json()
+    
+    def balance_diamonds(self):
+        # /api/diamond/balances
+        # {"ok":true,"data":{"user_id":"xxx","vault_amount":[{"currency":"DIAMOND","amount":"9999999"}]}}
 
 
 @dataclass
