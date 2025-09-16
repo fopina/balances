@@ -35,7 +35,7 @@ class Client(requests.Session):
             },
         )
 
-    def request(self, method, url, *args, **kwargs):
+    def request(self, method: str, url: str, *args, **kwargs):
         url = url if url.startswith('https://') else f'{self.URL}{url}'
         r = super().request(method, url, *args, **kwargs)
         r.raise_for_status()
@@ -61,6 +61,10 @@ class Args:
 >>>>>>> fe3630b (x)
     )
     screenshot: bool = classyclick.Option(help='Take screenshot on exception')
+    use_statements: bool = classyclick.Option(
+        '-s',
+        help='If user is not able to view portfolio, use this to resort to daily statements. Only changes once a day but better than nothing...',
+    )
 
 
 @classyclick.command()
@@ -153,6 +157,22 @@ class CLI(SeleniumCLI, Args):
                 'unit_of_measurement': 'USD',
             },
         }
+
+        if self.use_statements:
+            r = client.get('https://www.interactivebrokers.ie/AccountManagement/OneBarAuthentication?json=1')
+            data = r.json()
+            print(data)
+            r = client.get(
+                'https://www.interactivebrokers.ie/AccountManagement/Statements?action=UPDATED_CONFIG&period=DAILY&statementCategory=DEFAULT_STATEMENT&statementType=SIMPLIFIED_SUMMARY',
+                headers={
+                    'Sessionid': data['sessionId'],
+                    'Am_uuid': 'xxx',
+                    'Accounthash': str(data['portfolioAccounts'][0]['id']),
+                    'Active_context': 'AM_DEPENDENCY',
+                },
+            )
+            print(r.json())
+            exit(0)
 
         positions = client.get(f'portfolio2/{acc_id}/positions').json()
         for pos in positions:
