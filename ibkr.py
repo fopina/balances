@@ -63,7 +63,6 @@ class CLI(SeleniumCLI, Args):
         if self.token_file.exists():
             cookies = json.loads(self.token_file.read_text())
             client = Client(cookies)
-            client.verify = False
             try:
                 client.validate()
                 return client
