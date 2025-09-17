@@ -24,9 +24,6 @@ class Client(requests.Session):
     def request(self, method, url, *args, **kwargs):
         url = f"{self.URL}{url.lstrip('/')}"
         r = super().request(method, url, *args, **kwargs)
-        if r.status_code == 503:
-            # temporarily printout the content of these errors to better handle them
-            print(r.content)
         r.raise_for_status()
         return r
 
@@ -116,7 +113,14 @@ class CLI(BasicCLI, Args):
         client = Client()
         if self.insecure:
             client.verify = False
-        client.login(self.username, self.password, self.nif)
+
+        try:
+            client.login(self.username, self.password, self.nif)
+        except requests.RequestException as e:
+            if e.response.status_code == 503 and 'src="/indisponibilidade/index.html"' in e.response.content:
+                raise click.ClickException('Portal under maintenance')
+            raise
+
         subs = client.daily_statement()
 
         hass_data = {

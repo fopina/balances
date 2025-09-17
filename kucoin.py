@@ -39,7 +39,8 @@ class CLI(BasicCLI, Args):
             client.rest_service()
             .get_account_service()
             # TODO: add margin and futures
-            .get_account_api().get_spot_account_list(GetSpotAccountListReq())
+            .get_account_api()
+            .get_spot_account_list(GetSpotAccountListReq())
         )
         hass_data = {
             'state': 0,
@@ -60,7 +61,8 @@ class CLI(BasicCLI, Args):
             sub_accounts = (
                 client.rest_service()
                 .get_account_service()
-                .get_sub_account_api().get_spot_sub_account_list_v2(GetSpotSubAccountListV2Req(currentPage=current_page, pageSize=100))
+                .get_sub_account_api()
+                .get_spot_sub_account_list_v2(GetSpotSubAccountListV2Req(currentPage=current_page, pageSize=100))
             )
             for sub in sub_accounts.items:
                 for subs in (sub.main_accounts, sub.trade_accounts, sub.margin_accounts):
@@ -70,7 +72,7 @@ class CLI(BasicCLI, Args):
                         accum[kn] = float(accum.get(kn, 0)) + kv
                         price = float(getattr(prices, kn, 0))
                         accum_sub[sub.sub_name] = accum_sub.get(sub.sub_name, 0) + price * kv
-            
+
             if sub_accounts.total_page <= current_page:
                 break
             current_page += 1
