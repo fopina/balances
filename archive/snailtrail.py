@@ -1,11 +1,12 @@
 from dataclasses import dataclass
 from typing import List
+
+import classyclick
+from common.cli import fx, hass
 from web3 import Web3
 from web3.middleware import ExtraDataToPOAMiddleware
 
-from common.cli import fx, hass
 from common.cli_ng import BasicCLI
-import classyclick
 
 CONTRACT_RACE = '0x58B699642f2a4b91Dd10800Ef852427B719dB1f0'
 CONTRACT_SLIME = '0x5a15Bdcf9a3A8e799fa4381E666466a516F2d9C8'

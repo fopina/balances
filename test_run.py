@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
 import argparse
-import subprocess
 import json
+import subprocess
 from pathlib import Path
 
 PARAM_MAP = json.loads((Path(__file__).parent / 'test_run.json').read_text())

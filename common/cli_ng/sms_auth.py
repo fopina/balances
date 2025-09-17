@@ -1,6 +1,8 @@
 from dataclasses import dataclass
+
 import classyclick
 import click
+
 from .tgquery import TGQueryMixin
 
 

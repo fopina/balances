@@ -4,11 +4,12 @@ Collect balances using https://portfolio.metamask.io/
 This allows collecting multiple tokens without knowing contracts in advance for multiple chains.
 """
 from collections import defaultdict
+from dataclasses import dataclass
+
+import classyclick
 import requests
 
 from common.cli_ng import BasicCLI
-import classyclick
-from dataclasses import dataclass
 
 
 class Client(requests.Session):

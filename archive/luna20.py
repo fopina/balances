@@ -1,5 +1,4 @@
 import requests
-
 from common.cli import BasicCLI
 from common.cli.fx import CryptoFXMixin
 

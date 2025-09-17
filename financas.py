@@ -1,13 +1,13 @@
-from dataclasses import dataclass
 import html
 import logging
 import re
 import time
+from dataclasses import dataclass
 from datetime import datetime
 
+import classyclick
 import click
 import requests
-import classyclick
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 

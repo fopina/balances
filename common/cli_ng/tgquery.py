@@ -1,7 +1,8 @@
-from dataclasses import dataclass
 import json
 import time
+from dataclasses import dataclass
 from typing import Optional
+
 import classyclick
 import requests
 

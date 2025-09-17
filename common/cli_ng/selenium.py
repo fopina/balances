@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 import classyclick
+
 from .. import webdriver
 from . import BasicCLI
 

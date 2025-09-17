@@ -1,13 +1,19 @@
 from dataclasses import dataclass
+
+import classyclick
 from kucoin_universal_sdk.api import DefaultClient
-from kucoin_universal_sdk.model import ClientOptionBuilder
-from kucoin_universal_sdk.model import TransportOptionBuilder
-from kucoin_universal_sdk.model import GLOBAL_API_ENDPOINT, GLOBAL_FUTURES_API_ENDPOINT, GLOBAL_BROKER_API_ENDPOINT
-from kucoin_universal_sdk.generate.spot.market import GetFiatPriceReq
 from kucoin_universal_sdk.generate.account.account import GetSpotAccountListReq
 from kucoin_universal_sdk.generate.account.subaccount import GetSpotSubAccountListV2Req
+from kucoin_universal_sdk.generate.spot.market import GetFiatPriceReq
+from kucoin_universal_sdk.model import (
+    GLOBAL_API_ENDPOINT,
+    GLOBAL_BROKER_API_ENDPOINT,
+    GLOBAL_FUTURES_API_ENDPOINT,
+    ClientOptionBuilder,
+    TransportOptionBuilder,
+)
+
 from common.cli_ng import BasicCLI
-import classyclick
 
 
 @dataclass

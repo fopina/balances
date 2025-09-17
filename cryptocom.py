@@ -1,9 +1,10 @@
 from dataclasses import dataclass
+
+import classyclick
+import click
 import requests
 
 from common.cli_ng import BasicCLI
-import classyclick
-import click
 
 
 class Client(requests.Session):

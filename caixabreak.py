@@ -1,7 +1,8 @@
 from dataclasses import dataclass
 
-import requests
 import classyclick
+import requests
+
 from common.cli_ng import BasicCLI
 
 

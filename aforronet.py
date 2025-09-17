@@ -1,9 +1,10 @@
-from dataclasses import dataclass
 import re
+from dataclasses import dataclass
 
+import classyclick
 import click
 import requests
-import classyclick
+
 from common.cli_ng import BasicCLI
 
 TAG_RE = re.compile(r'<.+?>')

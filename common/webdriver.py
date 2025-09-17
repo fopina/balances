@@ -45,7 +45,7 @@ class MyRemoteDriver(webdriver.Remote, ChromiumHelperMixin):
 
     def execute_cdp_cmd(self, cmd: str, cmd_args: dict):
         # copied from ChromiumRemoteConnection
-        self.command_executor._commands['executeCdpCommand'] = ('POST', f'/session/$sessionId/goog/cdp/execute')
+        self.command_executor._commands['executeCdpCommand'] = ('POST', '/session/$sessionId/goog/cdp/execute')
         return self.execute("executeCdpCommand", {'cmd': cmd, 'params': cmd_args})['value']
 
 
@@ -68,6 +68,6 @@ class MyDriver(webdriver.Chrome, ChromiumHelperMixin):
 
 
 # monkeypatch WebDriverException to not print out stacktrace...!
-from selenium.common import exceptions
+from selenium.common import exceptions  # noqa
 
 exceptions.WebDriverException.__str__ = lambda x: f"Message: {x.msg}\n"

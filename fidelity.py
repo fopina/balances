@@ -1,17 +1,18 @@
+import json
+import logging
+import re
+import time
 from dataclasses import dataclass
 from pathlib import Path
-import re
+
 import classyclick
 import click
 import requests
-import json
-import logging
-import time
+from selenium.common.exceptions import WebDriverException
+from selenium.webdriver.common.by import By
 
 from common.cli_ng.selenium import SeleniumCLI
 from common.cli_ng.sms_auth import SMSAuthMixin
-from selenium.common.exceptions import WebDriverException
-from selenium.webdriver.common.by import By
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger(__name__)
@@ -106,7 +107,7 @@ class CLI(SMSAuthMixin, SeleniumCLI, Args):
 
         if not self.plan_id and len(summary['planSummary']['plans']) > 1:
             raise click.ClickException(
-                f'Multiple plans found, use --plan-id to specify which to track: {[plan['planId'] for plan in summary['planSummary']['plans']]}'
+                f'Multiple plans found, use --plan-id to specify which to track: {[plan["planId"] for plan in summary["planSummary"]["plans"]]}'
             )
 
         plan_data = None

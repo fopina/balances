@@ -4,11 +4,10 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 import requests
-from selenium.common.exceptions import WebDriverException
-from selenium.webdriver.common.by import By as By
-
 from common.cli.otp import OTPMixin
 from common.cli.selenium import SeleniumCLI
+from selenium.common.exceptions import WebDriverException
+from selenium.webdriver.common.by import By as By
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger(__name__)
@@ -109,7 +108,7 @@ class CLI(OTPMixin, SeleniumCLI):
             try:
                 client.refresh_token()
                 return client
-            except Exception as e:
+            except Exception:
                 logger.exception("invalid token, logging back in")
 
         tries = 0

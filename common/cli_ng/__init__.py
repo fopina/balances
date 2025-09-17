@@ -1,9 +1,10 @@
-from dataclasses import dataclass
-from pathlib import Path
-import sys
 import os
-import classyclick
+import sys
+from dataclasses import dataclass
 from functools import cached_property
+from pathlib import Path
+
+import classyclick
 
 from .. import hass
 
