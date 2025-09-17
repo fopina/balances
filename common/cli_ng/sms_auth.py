@@ -1,9 +1,6 @@
 from dataclasses import dataclass
-import json
-import time
 import classyclick
 import click
-import requests
 from .tgquery import TGQueryMixin
 
 
@@ -14,11 +11,14 @@ class SMSAuthMixin(TGQueryMixin):
     )
 
     def fail_if_no_sms_auth(self, msg='Failed login: sms-auth'):
-        if not self.sms_auth:
+        if not self.sms_auth or not self.tg_bot:
             raise click.ClickException(msg)
 
     def prompt_code(self, app_id, prompt='SMS Code'):
         if self.tg_bot:
-            return self.tg_prompt(f'*{app_id}* {prompt}')
+            code = self.tg_prompt(f'*{app_id}* {prompt}')
+            if code is None:
+                raise click.ClickException('Failed to get SMS code from Telegram')
+            return code.strip()
         else:
-            return input(f'{prompt}: ')
+            return input(f'{prompt}: ').strip()

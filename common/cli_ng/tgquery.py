@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 import json
 import time
+from typing import Optional
 import classyclick
 import requests
 
@@ -68,7 +69,7 @@ class TGQueryMixin:
 
             time.sleep(1)
 
-    def tg_prompt(self, text, chat_id: str = None, retries: int = None, timeout=30):
+    def tg_prompt(self, text, chat_id: str = None, retries: int = None, timeout=30) -> Optional[str]:
         sent = self.tg_send_message(text, chat_id=chat_id)
         for u in self.tg_poll_updates(retries=retries, timeout=timeout):
             if u['message'].get('reply_to_message', {}).get('message_id') == sent['result']['message_id']:
