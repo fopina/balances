@@ -1,5 +1,6 @@
 import argparse
 from functools import lru_cache
+import subprocess
 from typing import Dict
 
 from .image import Image
@@ -54,4 +55,7 @@ class CLI:
 
 
 def cli(argv=None):
-    CLI().run(argv)
+    try:
+        CLI().run(argv)
+    except subprocess.CalledProcessError as e:
+        exit(e.returncode)

@@ -22,6 +22,7 @@ Check each module for documentation (comments on top) on how to use it.
 
 * [Degiro](degiro.py) - [website](https://www.degiro.nl/)
 * [Interactive Brokers](ibfetch.py) - [website](https://www.interactivebrokers.co.uk/)
+* [Fidelity](fidelity.py) - [website](https://nb.fidelity.com/)
 
 ### Banking
 
