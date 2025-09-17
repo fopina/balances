@@ -26,3 +26,5 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v4
       - run: ./build.py ${{matrix.target}}
+      # more tests would be nice, but at least check --help goes well (validate syntax/imports)
+      - run: docker run --rm ghcr.io/fopina/balances:${{matrix.target}} --help
