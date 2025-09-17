@@ -1,3 +1,9 @@
+"""
+Scraper for IBKR.
+
+If using a secondary (read-only) user, make sure it has "Market data" access (under Trading permissions) and "TWS" under Trading platforms.
+"""
+
 import json
 import logging
 import time
