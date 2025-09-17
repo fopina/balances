@@ -33,7 +33,7 @@ class Client(requests.Session):
     def login(self, username, password):
         r = self.get('https://www.acesso.gov.pt/jsp/loginRedirectForm.jsp?path=painelAdquirente.action&partID=EFPF')
         r.raise_for_status()
-        m = re.findall(r'<input type="hidden" name="_csrf" value="(.*?)"/>', r.text)
+        m = re.findall(r'parameterName: \`_csrf\`,\s*token: \`(.*?)\`', r.text, re.MULTILINE)
         if not m:
             raise click.ClickException('failed to get csrf token')
         r = self.post(
