@@ -14,7 +14,9 @@ class SMSAuthMixin(TGQueryMixin):
         if not self.sms_auth or not self.tg_bot:
             raise click.ClickException(msg)
 
-    def prompt_code(self, app_id, prompt='SMS Code'):
+    def prompt_code(self, app_id=None, prompt='SMS Code'):
+        if app_id is None:
+            app_id = self.scraper_name
         if self.tg_bot:
             code = self.tg_prompt(f'*{app_id}* {prompt}')
             if code is None:
