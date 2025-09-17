@@ -1,6 +1,6 @@
 import argparse
-from functools import lru_cache
 import subprocess
+from functools import lru_cache
 from typing import Dict
 
 from .image import Image

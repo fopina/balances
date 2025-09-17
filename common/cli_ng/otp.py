@@ -1,6 +1,7 @@
 from dataclasses import dataclass
-import onetimepass
+
 import classyclick
+import onetimepass
 
 
 @dataclass

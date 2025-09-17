@@ -1,11 +1,12 @@
 from dataclasses import dataclass
 from typing import List
+
+import classyclick
+from common.cli import fx, hass
 from web3 import Web3
 from web3.middleware import ExtraDataToPOAMiddleware
 
-from common.cli import fx, hass
 from common.cli_ng import BasicCLI
-import classyclick
 
 CONTRACT_RACE = '0x58B699642f2a4b91Dd10800Ef852427B719dB1f0'
 CONTRACT_SLIME = '0x5a15Bdcf9a3A8e799fa4381E666466a516F2d9C8'
@@ -16,11 +17,11 @@ CONTRACT_MULTICALL = '0xca11bde05977b3631167028862be2a173976ca11'
 
 ABI_RACE = [
     {
-        "inputs": [],
-        "name": "claimableRewards",
-        "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
-        "stateMutability": "view",
-        "type": "function",
+        'inputs': [],
+        'name': 'claimableRewards',
+        'outputs': [{'internalType': 'uint256', 'name': '', 'type': 'uint256'}],
+        'stateMutability': 'view',
+        'type': 'function',
     },
     {
         'inputs': [{'internalType': 'address', 'name': '', 'type': 'address'}],
@@ -218,11 +219,7 @@ class CLI(fx.CryptoFXMixin, OverArgs, BasicCLI, Args):
                 hass_data['attributes']['avax']
                 + hass_data['attributes']['unclaimedw']
                 + hass_data['attributes']['wavax']
-            ) * hass_data[
-                'attributes'
-            ][
-                'avax_rate'
-            ]
+            ) * hass_data['attributes']['avax_rate']
 
             self.pprint(hass_data)
             r.append(hass_data)

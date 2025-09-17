@@ -42,11 +42,11 @@ def main(argv=None):
     args = build_parser().parse_args(argv)
 
     bh = query(
-        '''
+        """
         query {
             LastSyncedHeight
         }
-        '''
+        """
     )
 
     last_block = bh['LastSyncedHeight'] + 1
@@ -55,7 +55,7 @@ def main(argv=None):
     query_msg_balance = {'balance': {'address': args.your_wallet}}
 
     info = query(
-        r'''
+        r"""
         query ($marketContract: String!, $contract: String!, $walletAddress: String!, $queryMsg1: String!, $queryMsg2: String!) {
             moneyMarketEpochState: WasmContractsContractAddressStore(
                 ContractAddress: $marketContract
@@ -78,7 +78,7 @@ def main(argv=None):
                 }
             }
         }
-        ''',
+        """,
         variables={
             'marketContract': args.market_contract,
             'contract': args.your_contract,

@@ -1,9 +1,10 @@
-from dataclasses import dataclass
 import re
+from dataclasses import dataclass
 
+import classyclick
 import click
 import requests
-import classyclick
+
 from common.cli_ng import BasicCLI
 
 TAG_RE = re.compile(r'<.+?>')
@@ -22,7 +23,7 @@ class Client(requests.Session):
         )
 
     def request(self, method, url, *args, **kwargs):
-        url = f"{self.URL}{url.lstrip('/')}"
+        url = f'{self.URL}{url.lstrip("/")}'
         r = super().request(method, url, *args, **kwargs)
         r.raise_for_status()
         return r
@@ -34,8 +35,8 @@ class Client(requests.Session):
             '__EVENTARGUMENT': '',
             'txtIdentificacao': username,
             'txtSenha': password,
-            'btLoginAfr.x': "0",
-            'btLoginAfr.y': "0",
+            'btLoginAfr.x': '0',
+            'btLoginAfr.y': '0',
         }
 
         m = re.findall(r'Indique o <strong>(\d+).*</strong> e <strong>(\d+).*</strong>', r.text)
@@ -66,7 +67,7 @@ class Client(requests.Session):
         r.raise_for_status()
         if r.url.endswith('/Iimf.AforroNet.UI/services/login/Login.aspx'):
             msg = re.findall(
-                r'''<TD class='msgCustomValSumm' id='MessageCustomValSumm' .*?><div id="CValSummary">(.*?)</div></TD>''',
+                r"""<TD class='msgCustomValSumm' id='MessageCustomValSumm' .*?><div id="CValSummary">(.*?)</div></TD>""",
                 r.text,
                 re.DOTALL,
             )
@@ -139,8 +140,8 @@ class CLI(BasicCLI, Args):
             hass_data['attributes'][f'{_n}_units'] = sub[3]
             hass_data['attributes'][f'{_n}_value'] = sub[4]
             hass_data['state'] += sub[4]
-            print(f"* {sub[1]}: {sub[0]} {sub[2:]}")
-        print(f"Total: {hass_data['state']}")
+            print(f'* {sub[1]}: {sub[0]} {sub[2:]}')
+        print(f'Total: {hass_data["state"]}')
         return hass_data
 
 

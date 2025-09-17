@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
 import argparse
-import subprocess
 import json
+import subprocess
 from pathlib import Path
 
 PARAM_MAP = json.loads((Path(__file__).parent / 'test_run.json').read_text())
@@ -16,7 +16,7 @@ def main():
     )
     parser.add_argument('--docker', '-d', action='store_true', help='Use docker image')
     parser.add_argument('--selenium', '-s', type=str, help='Selenium container name (to use with --link)')
-    parser.add_argument("flags", nargs=argparse.REMAINDER, help="Extra arguments to forward to script")
+    parser.add_argument('flags', nargs=argparse.REMAINDER, help='Extra arguments to forward to script')
 
     args = parser.parse_args()
 

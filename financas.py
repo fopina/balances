@@ -1,13 +1,13 @@
-from dataclasses import dataclass
 import html
 import logging
 import re
 import time
+from dataclasses import dataclass
 from datetime import datetime
 
+import classyclick
 import click
 import requests
-import classyclick
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
@@ -23,12 +23,12 @@ class Client(requests.Session):
         retry_strategy = Retry(
             total=3,
             status_forcelist=[429, 500, 502, 503, 504],
-            allowed_methods=["GET", "POST"],
+            allowed_methods=['GET', 'POST'],
             raise_on_status=False,
         )
         adapter = HTTPAdapter(max_retries=retry_strategy)
-        self.mount("https://", adapter)
-        self.mount("http://", adapter)
+        self.mount('https://', adapter)
+        self.mount('http://', adapter)
 
     def login(self, username, password):
         r = self.get('https://www.acesso.gov.pt/jsp/loginRedirectForm.jsp?path=painelAdquirente.action&partID=EFPF')
@@ -155,7 +155,7 @@ class CLI(BasicCLI, Args):
             hass_data['attributes'][f'{k}_return'] = v[1]
             hass_data['attributes'][f'{k}_spent'] = v[2]
             print(f'{v[0]} ({k}): {v[1]} ({v[2]})')
-        print(f"\nTotal: {hass_data['state']}")
+        print(f'\nTotal: {hass_data["state"]}')
         return hass_data
 
 

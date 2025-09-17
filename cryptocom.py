@@ -1,9 +1,10 @@
 from dataclasses import dataclass
+
+import classyclick
+import click
 import requests
 
 from common.cli_ng import BasicCLI
-import classyclick
-import click
 
 
 class Client(requests.Session):
@@ -24,7 +25,7 @@ class Client(requests.Session):
         )
 
     def request(self, method, url, *args, **kwargs):
-        url = f"{self.URL}{url.lstrip('/')}"
+        url = f'{self.URL}{url.lstrip("/")}'
         r = super().request(method, url, *args, **kwargs)
         r.raise_for_status()
         return r
@@ -86,7 +87,7 @@ class CLI(BasicCLI, Args):
                 _id = k['id'].lower()
                 amt = float(k['amount']['amount'])
                 val = float(k['price_native']['amount'])
-                print(f"{_id}: {val} ({amt})")
+                print(f'{_id}: {val} ({amt})')
                 hass_data['attributes'][f'{_id}_amt'] = amt
                 hass_data['attributes'][f'{_id}_val'] = val
                 hass_data['state'] += val
@@ -137,9 +138,9 @@ class CLI(BasicCLI, Args):
                             raise Exception(d)
 
             hass_data['attributes']['diamonds'] = vault_diamonds
-            print(f"diamonds: {vault_diamonds}")
+            print(f'diamonds: {vault_diamonds}')
 
-        print(f"\nTotal: {hass_data['state']}")
+        print(f'\nTotal: {hass_data["state"]}')
         return hass_data
 
 
