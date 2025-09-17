@@ -11,7 +11,7 @@ class SMSAuthMixin(TGQueryMixin):
     )
 
     def fail_if_no_sms_auth(self, msg='Failed login: sms-auth'):
-        if not self.sms_auth or not self.tg_bot:
+        if not self.sms_auth and not self.tg_bot:
             raise click.ClickException(msg)
 
     def prompt_code(self, app_id=None, prompt='SMS Code'):
