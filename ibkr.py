@@ -149,9 +149,12 @@ class CLI(SeleniumCLI, Args):
         ledger = client.get(f'portfolio/{acc_id}/ledger').json()
         for cur, curd in ledger.items():
             ticker = cur.lower()
+            # this value is in the currency itself - for total, all of them should be converted to common/USD - FIXME
             val = curd['cashbalance']
             hass_data['attributes'][f'{ticker}_fiat'] = val
-            hass_data['state'] += val
+            # BASE is the total of all currencies converted to account currency - exclude from total
+            if ticker != 'base':
+                hass_data['state'] += val
 
         self.pprint(hass_data)
         return hass_data
