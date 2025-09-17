@@ -97,7 +97,7 @@ class CLI(BasicCLI, Args):
             print(k, v)
             hass_data['attributes'][k] = v
 
-        print(f"\nTotal: {hass_data['state']}")
+        print(f'\nTotal: {hass_data["state"]}')
         return hass_data
 
 

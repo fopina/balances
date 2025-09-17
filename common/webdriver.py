@@ -6,23 +6,23 @@ from selenium import webdriver
 class ChromiumHelperMixin:
     def hide_selenium(self, options: webdriver.ChromeOptions):
         # hide selenium! all possible flags found online :shrug:
-        options.add_experimental_option("excludeSwitches", ["enable-automation"])
-        options.add_experimental_option("useAutomationExtension", False)
-        options.add_argument("--disable-blink-features")
-        options.add_argument("--disable-blink-features=AutomationControlled")
+        options.add_experimental_option('excludeSwitches', ['enable-automation'])
+        options.add_experimental_option('useAutomationExtension', False)
+        options.add_argument('--disable-blink-features')
+        options.add_argument('--disable-blink-features=AutomationControlled')
 
     def go_headless(self, options: webdriver.ChromeOptions):
-        options.add_argument("--headless")
-        options.add_argument("--disable-gpu")
-        options.add_argument("--no-sandbox")
-        options.add_argument("--disable-dev-shm-usage")
-        options.add_argument("start-maximized")
+        options.add_argument('--headless')
+        options.add_argument('--disable-gpu')
+        options.add_argument('--no-sandbox')
+        options.add_argument('--disable-dev-shm-usage')
+        options.add_argument('start-maximized')
 
     def set_user_agent(self, user_agent: str):
         # set UA (such as to mask `headlesschrome`)...
         self.execute_cdp_cmd(
-            "Network.setUserAgentOverride",
-            {"userAgent": user_agent},
+            'Network.setUserAgentOverride',
+            {'userAgent': user_agent},
         )
 
     def init_options_in_driver_kwargs(self, extra_driver_kwargs: dict):
@@ -46,7 +46,7 @@ class MyRemoteDriver(webdriver.Remote, ChromiumHelperMixin):
     def execute_cdp_cmd(self, cmd: str, cmd_args: dict):
         # copied from ChromiumRemoteConnection
         self.command_executor._commands['executeCdpCommand'] = ('POST', '/session/$sessionId/goog/cdp/execute')
-        return self.execute("executeCdpCommand", {'cmd': cmd, 'params': cmd_args})['value']
+        return self.execute('executeCdpCommand', {'cmd': cmd, 'params': cmd_args})['value']
 
 
 class MyDriver(webdriver.Chrome, ChromiumHelperMixin):
@@ -54,14 +54,14 @@ class MyDriver(webdriver.Chrome, ChromiumHelperMixin):
         options = self.init_options_in_driver_kwargs(extra_driver_kwargs)
         self.hide_selenium(options)
 
-        if Path("/Applications/Chromium.app/Contents/MacOS/Chromium").exists():
+        if Path('/Applications/Chromium.app/Contents/MacOS/Chromium').exists():
             # for dev environment
-            options.binary_location = "/Applications/Chromium.app/Contents/MacOS/Chromium"
+            options.binary_location = '/Applications/Chromium.app/Contents/MacOS/Chromium'
 
         if headless:
             self.go_headless(options)
         if remote_debug_port:
-            options.add_argument(f"--remote-debugging-port={remote_debug_port}")
+            options.add_argument(f'--remote-debugging-port={remote_debug_port}')
         super().__init__(options=options, **extra_driver_kwargs)
         if user_agent is not None:
             self.set_user_agent(user_agent)
@@ -70,4 +70,4 @@ class MyDriver(webdriver.Chrome, ChromiumHelperMixin):
 # monkeypatch WebDriverException to not print out stacktrace...!
 from selenium.common import exceptions  # noqa
 
-exceptions.WebDriverException.__str__ = lambda x: f"Message: {x.msg}\n"
+exceptions.WebDriverException.__str__ = lambda x: f'Message: {x.msg}\n'

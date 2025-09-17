@@ -11,7 +11,7 @@ from selenium.webdriver.common.by import By as By
 
 from common.cli_ng.selenium import SeleniumCLI
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
 logger = logging.getLogger(__name__)
 
 
@@ -20,7 +20,7 @@ class ClientError(Exception):
 
 
 class Client(requests.Session):
-    URL = "https://www.interactivebrokers.co.uk/portal.proxy/v1/portal/"
+    URL = 'https://www.interactivebrokers.co.uk/portal.proxy/v1/portal/'
 
     def __init__(self, cookies):
         super().__init__()
@@ -48,8 +48,8 @@ class Args:
     password: str = classyclick.Argument()
     token_file: Path = classyclick.Option(
         '-f',
-        default="ibfetch.local",
-        help="File to store current cookies",
+        default='ibfetch.local',
+        help='File to store current cookies',
     )
     screenshot: bool = classyclick.Option(help='Take screenshot on exception')
 
@@ -81,28 +81,28 @@ class CLI(SeleniumCLI, Args):
                 print(f'IBFETCH: try {tries}: {e}')
                 time.sleep(5)
 
-        with self.token_file.open("w") as f:
+        with self.token_file.open('w') as f:
             f.write(json.dumps(cookies))
 
         client = Client(cookies)
         return client
 
     def login_and_token(self):
-        logger.info("logging in")
+        logger.info('logging in')
         driver = self.get_webdriver()
         driver.implicitly_wait(20)
         cookies = {}
         try:
-            driver.get("https://www.interactivebrokers.co.uk/sso/Login")
-            el = driver.find_element(By.NAME, "username")
+            driver.get('https://www.interactivebrokers.co.uk/sso/Login')
+            el = driver.find_element(By.NAME, 'username')
             # accept privacy cookies
-            driver.add_cookie({"name": "IB_PRIV_PREFS", "value": "0%7C0%7C0"})
-            driver.get("https://www.interactivebrokers.co.uk/sso/Login")
-            el = driver.find_element(By.NAME, "username")
+            driver.add_cookie({'name': 'IB_PRIV_PREFS', 'value': '0%7C0%7C0'})
+            driver.get('https://www.interactivebrokers.co.uk/sso/Login')
+            el = driver.find_element(By.NAME, 'username')
             time.sleep(1)
-            logger.info("found login form")
+            logger.info('found login form')
             el.send_keys(self.username)
-            el = driver.find_element(By.NAME, "password")
+            el = driver.find_element(By.NAME, 'password')
             el.send_keys(self.password)
             el.submit()
 
@@ -112,7 +112,7 @@ class CLI(SeleniumCLI, Args):
             if el.tag_name == 'div':
                 raise ClientError(el.get_attribute('innerHTML'))
             time.sleep(1)
-            logger.info("logged in!")
+            logger.info('logged in!')
             cookies.update({c['name']: c['value'] for c in driver.get_cookies()})
         except ClientError:
             raise
@@ -131,9 +131,9 @@ class CLI(SeleniumCLI, Args):
         acc_id = r[0]['accountId']
 
         hass_data = {
-            "state": 0,
-            "attributes": {
-                "unit_of_measurement": "USD",
+            'state': 0,
+            'attributes': {
+                'unit_of_measurement': 'USD',
             },
         }
 
@@ -143,18 +143,18 @@ class CLI(SeleniumCLI, Args):
             val = pos['marketValue']
             hass_data['attributes'][f'{ticker}_size'] = pos['position']
             hass_data['attributes'][f'{ticker}_val'] = val
-            hass_data["state"] += val
+            hass_data['state'] += val
 
         ledger = client.get(f'portfolio/{acc_id}/ledger').json()
         for cur, curd in ledger.items():
             ticker = cur.lower()
             val = curd['cashbalance']
             hass_data['attributes'][f'{ticker}_fiat'] = val
-            hass_data["state"] += val
+            hass_data['state'] += val
 
         self.pprint(hass_data)
         return hass_data
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     CLI.click()

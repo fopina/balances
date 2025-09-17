@@ -24,7 +24,7 @@ class Client(requests.Session):
         self._config = None
 
     def request(self, method, url, *args, **kwargs):
-        url = f"{self.URL}{url.lstrip('/')}"
+        url = f'{self.URL}{url.lstrip("/")}'
         return super().request(method, url, *args, **kwargs)
 
     def login(self, user, auth):
@@ -66,7 +66,7 @@ class CLI(BasicCLI, Args):
             },
         }
 
-        print(f"Balance: {hass_data['state']}")
+        print(f'Balance: {hass_data["state"]}')
         return hass_data
 
 

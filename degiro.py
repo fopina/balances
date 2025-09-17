@@ -19,7 +19,7 @@ class Client(requests.Session):
         self._config = None
 
     def request(self, method, url, *args, **kwargs):
-        url = f"{self.URL}{url.lstrip('/')}"
+        url = f'{self.URL}{url.lstrip("/")}'
         return super().request(method, url, *args, **kwargs)
 
     def login(self, username, password, otp=None, pin_code=None):
@@ -160,19 +160,19 @@ class CLI(otp.OTPMixin, BasicCLI, Args):
                 continue
             if x['size'] == 0 and not self.zero:
                 continue
-            key = f"{x['product']['symbol']}_{x['product']['productType']}".lower()
+            key = f'{x["product"]["symbol"]}_{x["product"]["productType"]}'.lower()
             keyv = f'{key}_val'
             products[key] = products.get(key, 0) + x['size']
             products[keyv] = products.get(keyv, 0) + x['value']
             if x['size'] > 0:
-                vwd_ids[f"{x['product']['vwdId']}.LastPrice"] = key
+                vwd_ids[f'{x["product"]["vwdId"]}.LastPrice'] = key
 
         # update CASH with product info
         for x in portfolio:
             if x['positionType'] != 'CASH':
                 continue
             if x['id'] in ('FLATEX_EUR', 'FLATEX_USD'):
-                key = f"{x['id']}".lower()
+                key = f'{x["id"]}'.lower()
                 keyv = f'{key}_val'
                 products[key] = products.get(key, 0) + x['size']
                 products[keyv] = products.get(keyv, 0) + x['value']
@@ -192,11 +192,11 @@ class CLI(otp.OTPMixin, BasicCLI, Args):
         }
 
         for k, v in products.items():
-            print(f"{k}: {v}")
+            print(f'{k}: {v}')
             hass_data['attributes'][k] = v
             hass_data['state'] += v
 
-        print(f"\nTotal: {hass_data['state']}")
+        print(f'\nTotal: {hass_data["state"]}')
         return hass_data
 
 

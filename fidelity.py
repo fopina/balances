@@ -14,7 +14,7 @@ from selenium.webdriver.common.by import By
 from common.cli_ng.selenium import SeleniumCLI
 from common.cli_ng.sms_auth import SMSAuthMixin
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
 logger = logging.getLogger(__name__)
 
 
@@ -33,7 +33,7 @@ class Client(requests.Session):
 
     def request(self, method: str, url: str, *args, **kwargs):
         if not url.startswith('https://'):
-            url = f"{self.URL}{url.lstrip('/')}"
+            url = f'{self.URL}{url.lstrip("/")}'
         return super().request(method, url, *args, **kwargs)
 
     def load_plan_data(self):
@@ -62,12 +62,12 @@ class Client(requests.Session):
         r = self.post(
             f'/mybenefitsww/spsplanservices/stockplans/relationships/clients/{self._client_id}/plans',
             json={
-                "planTypeIds": [{"planType": plan_type, "planIds": plan_ids}],
-                "exercisablePlanTypeIds": [],
-                "userDetails": {
-                    "brokerageAccount": {"accountNumber": account_number, "authorizedAccount": False},
-                    "filActivated": False,
-                    "participantType": participant_type,
+                'planTypeIds': [{'planType': plan_type, 'planIds': plan_ids}],
+                'exercisablePlanTypeIds': [],
+                'userDetails': {
+                    'brokerageAccount': {'accountNumber': account_number, 'authorizedAccount': False},
+                    'filActivated': False,
+                    'participantType': participant_type,
                 },
             },
         )
@@ -88,8 +88,8 @@ class Args:
     screenshot: bool = classyclick.Option(help='Take screenshot on exception')
     token_file: Path = classyclick.Option(
         '-f',
-        default=".fidelity.local",
-        help="File to store current cookies",
+        default='.fidelity.local',
+        help='File to store current cookies',
     )
     plan_id: str = classyclick.Option(help='If more than 1 plan, use this to specify the plan ID to track')
 
@@ -161,7 +161,7 @@ class CLI(SMSAuthMixin, SeleniumCLI, Args):
                         continue
                 raise
 
-        with self.token_file.open("w") as f:
+        with self.token_file.open('w') as f:
             f.write(json.dumps(cookies))
 
         client = Client(cookies)
@@ -169,19 +169,19 @@ class CLI(SMSAuthMixin, SeleniumCLI, Args):
         return client
 
     def login_and_token(self):
-        logger.info("logging in")
+        logger.info('logging in')
         driver = self.get_webdriver()
         driver.implicitly_wait(20)
         cookies = {}
 
         try:
-            driver.get("https://nb.fidelity.com/public/nb/worldwide/home")
-            logger.info("wait for form...")
-            logger.info("found login form")
-            el = driver.find_element(By.ID, "dom-username-input")
+            driver.get('https://nb.fidelity.com/public/nb/worldwide/home')
+            logger.info('wait for form...')
+            logger.info('found login form')
+            el = driver.find_element(By.ID, 'dom-username-input')
             el.send_keys(self.username)
 
-            el = driver.find_element(By.ID, "dom-pswd-input")
+            el = driver.find_element(By.ID, 'dom-pswd-input')
             el.send_keys(self.password)
             el.send_keys('\n')
 
@@ -192,28 +192,28 @@ class CLI(SMSAuthMixin, SeleniumCLI, Args):
                 if 'pvd-alert__message' in driver.page_source:
                     el = driver.find_element(By.CSS_SELECTOR, 'p.pvd-alert__message')
                     raise click.ClickException(f'Failed login: {el.text.strip()}')
-                if '''Sorry, we can't complete this action right now.''' in driver.page_source:
+                if """Sorry, we can't complete this action right now.""" in driver.page_source:
                     # rate limiting on failed logins...?
                     raise click.ClickException('Failed login: CANNOT DO THIS RIGHT NOW???')
-                if '''we'll send a temporary code to your phone''' in driver.page_source:
+                if """we'll send a temporary code to your phone""" in driver.page_source:
                     self.fail_if_no_sms_auth()
-                    el_sms = driver.find_element(By.ID, "dom-channel-list-primary-button")
+                    el_sms = driver.find_element(By.ID, 'dom-channel-list-primary-button')
                     assert el_sms.text == 'Text me the code', 'Text me button does not have the right label'
 
                     # check cookie wall first
-                    el_cookie = driver.find_element(By.ID, "onetrust-accept-btn-handler")
+                    el_cookie = driver.find_element(By.ID, 'onetrust-accept-btn-handler')
                     el_cookie.click()
 
                     el_sms.click()
 
                     sms_code = self.prompt_code()
                     # do not ask again
-                    el_otp = driver.find_element(By.ID, "dom-trust-device-checkbox")
+                    el_otp = driver.find_element(By.ID, 'dom-trust-device-checkbox')
                     if not el_otp.is_selected():
                         # why is not clickable by the browser...?
-                        driver.execute_script("arguments[0].click();", el_otp)
+                        driver.execute_script('arguments[0].click();', el_otp)
 
-                    el_otp = driver.find_element(By.ID, "dom-otp-code-input")
+                    el_otp = driver.find_element(By.ID, 'dom-otp-code-input')
                     el_otp.send_keys(sms_code)
                     el_otp.send_keys('\n')
                 time.sleep(0.1)

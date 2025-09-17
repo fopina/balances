@@ -3,6 +3,7 @@
 Collect balances using https://portfolio.metamask.io/
 This allows collecting multiple tokens without knowing contracts in advance for multiple chains.
 """
+
 from collections import defaultdict
 from dataclasses import dataclass
 

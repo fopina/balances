@@ -33,7 +33,7 @@ class CLI(BasicCLI):
         queue = [k for k, v in all_coins['balance'].items() if v != '0']
         queue_l = len(queue)
         for i, k in enumerate(queue):
-            print(f'[{i+1}/{queue_l}] {k}')
+            print(f'[{i + 1}/{queue_l}] {k}')
             r = client.get(f'https://wallet-api.celsius.network/wallet/{k.replace(" ", "%20")}/balance/')
             vf = float(r['amount'])
             hass_data['attributes']['total_tokens'] += vf

@@ -17,11 +17,11 @@ CONTRACT_MULTICALL = '0xca11bde05977b3631167028862be2a173976ca11'
 
 ABI_RACE = [
     {
-        "inputs": [],
-        "name": "claimableRewards",
-        "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
-        "stateMutability": "view",
-        "type": "function",
+        'inputs': [],
+        'name': 'claimableRewards',
+        'outputs': [{'internalType': 'uint256', 'name': '', 'type': 'uint256'}],
+        'stateMutability': 'view',
+        'type': 'function',
     },
     {
         'inputs': [{'internalType': 'address', 'name': '', 'type': 'address'}],
@@ -219,11 +219,7 @@ class CLI(fx.CryptoFXMixin, OverArgs, BasicCLI, Args):
                 hass_data['attributes']['avax']
                 + hass_data['attributes']['unclaimedw']
                 + hass_data['attributes']['wavax']
-            ) * hass_data[
-                'attributes'
-            ][
-                'avax_rate'
-            ]
+            ) * hass_data['attributes']['avax_rate']
 
             self.pprint(hass_data)
             r.append(hass_data)

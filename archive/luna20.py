@@ -17,7 +17,7 @@ class Client(requests.Session):
         )
 
     def request(self, method, url, *args, **kwargs):
-        url = f"{self.URL}{url.lstrip('/')}"
+        url = f'{self.URL}{url.lstrip("/")}'
         return super().request(method, url, *args, **kwargs)
 
     def delegations(self, wallet):

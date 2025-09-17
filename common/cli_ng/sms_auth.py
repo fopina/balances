@@ -9,7 +9,7 @@ from .tgquery import TGQueryMixin
 @dataclass
 class SMSAuthMixin(TGQueryMixin):
     sms_auth: bool = classyclick.Option(
-        help="Perform SMS auth",
+        help='Perform SMS auth',
     )
 
     def fail_if_no_sms_auth(self, msg='Failed login: sms-auth'):
