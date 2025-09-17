@@ -14,7 +14,8 @@ def main():
         'script',
         help='Script file to execute',
     )
-    parser.add_argument('--docker', action='store_true', help='Use docker image')
+    parser.add_argument('--docker', '-d', action='store_true', help='Use docker image')
+    parser.add_argument('--selenium', '-s', type=str, help='Selenium container name (to use with --link)')
     parser.add_argument("flags", nargs=argparse.REMAINDER, help="Extra arguments to forward to script")
 
     args = parser.parse_args()
@@ -50,7 +51,11 @@ def main():
 
     try:
         if args.docker:
-            subprocess.check_call(['docker', 'run', gen_image(args.script)] + s_args)
+            if args.selenium:
+                sel = ['--link', args.selenium]
+            else:
+                sel = []
+            subprocess.check_call(['docker', 'run', '-i'] + sel + [gen_image(args.script)] + s_args)
         else:
             subprocess.check_call(['python', f'{args.script}.py'] + s_args)
     except subprocess.CalledProcessError as e:

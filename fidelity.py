@@ -205,7 +205,7 @@ class CLI(SMSAuthMixin, SeleniumCLI, Args):
 
                     el_sms.click()
 
-                    sms_code = self.prompt_code('fidelity')
+                    sms_code = self.prompt_code()
                     # do not ask again
                     el_otp = driver.find_element(By.ID, "dom-trust-device-checkbox")
                     if not el_otp.is_selected():

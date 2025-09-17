@@ -12,5 +12,6 @@ RUN --mount=type=bind,source=requirements/,target=/requirements/ \
     --mount=type=cache,target=/root/.cache/pip \
     [ ! -e /requirements/requirements_${ENTRY}.txt ] || pip install -r /requirements/requirements_${ENTRY}.txt
 COPY ${ENTRY}.py /entry.py
+ENV BALANCE_ENTRY="${ENTRY}"
 
 ENTRYPOINT [ "python", "-u", "/entry.py" ]
