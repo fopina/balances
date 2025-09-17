@@ -26,3 +26,4 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v4
       - run: ./build.py ${{matrix.target}}
+      - run: docker run --rm ghcr.io/fopina/balances:${{matrix.target}} --help
