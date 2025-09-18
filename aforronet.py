@@ -118,7 +118,7 @@ class CLI(BasicCLI, Args):
         try:
             client.login(self.username, self.password, self.nif)
         except requests.RequestException as e:
-            if e.response.status_code == 503 and 'src="/indisponibilidade/index.html"' in e.response.content:
+            if e.response.status_code == 503 and b'src="/indisponibilidade/index.html"' in e.response.content:
                 raise click.ClickException('Portal under maintenance')
             raise
 
