@@ -1,1 +1,2 @@
 -r requirements_common_selenium.txt
+-r requirements_common_otp.txt
