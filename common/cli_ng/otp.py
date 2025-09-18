@@ -13,6 +13,11 @@ class OTPMixin:
         if self.otp or self.otp_secret:
             return _Holder(self.otp, self.otp_secret)
 
+    def get_otp_code(self):
+        holder = self.otp_holder()
+        if holder is not None:
+            return holder()
+
 
 class _Holder:
     def __init__(self, otp, otp_secret):

@@ -2,6 +2,10 @@
 Scraper for IBKR.
 
 If using a secondary (read-only) user, make sure it has "Market data" access (under Trading permissions) and "TWS" under Trading platforms.
+As Secure Login System is mandatory for anyone with TWS access, you can either:
+* Add a "Mobile Authenticator App" as 2FA and provide the TOTP seed to this script to automate it; or
+* Use IB Key and get a notification every time the script runs; or
+* Convince someone from tech support to allow your account to not have SLS ^^
 """
 
 import json
@@ -15,7 +19,9 @@ import click
 import requests
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.common.by import By as By
+from selenium.webdriver.support.ui import Select
 
+from common.cli_ng.otp import OTPMixin
 from common.cli_ng.selenium import SeleniumCLI
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
@@ -58,7 +64,7 @@ class Args:
 
 
 @classyclick.command()
-class CLI(SeleniumCLI, Args):
+class CLI(OTPMixin, SeleniumCLI, Args):
     def get_client(self):
         if self.token_file.exists():
             cookies = json.loads(self.token_file.read_text())
@@ -91,7 +97,7 @@ class CLI(SeleniumCLI, Args):
     def login_and_token(self):
         logger.info('logging in')
         driver = self.get_webdriver()
-        driver.implicitly_wait(20)
+        driver.implicitly_wait(200)
         cookies = {}
         try:
             driver.get('https://www.interactivebrokers.ie/sso/Login')
@@ -107,9 +113,28 @@ class CLI(SeleniumCLI, Args):
             el.send_keys(self.password)
             el.submit()
 
-            el = driver.find_element(
-                By.CSS_SELECTOR, "a[href='#/dashboard/positions'],div.xyz-errormessage:not(:empty)"
-            )
+            # FIXME: missing locator for when there is only 1 2FA option (such as IB Key)
+            locator_2fa = 'div[aria-label="Select Second Factor Device"] select.xyz-multipleselect'
+            locator_done = "a[href='#/dashboard/positions']"
+            locator_error = 'div.xyz-errormessage:not(:empty)'
+
+            el = driver.find_element(By.CSS_SELECTOR, ','.join([locator_2fa, locator_done, locator_error]))
+
+            # condition order matters
+            if el.tag_name == 'select':
+                otp_code = self.get_otp_code()
+                if otp_code is not None:
+                    Select(el).select_by_visible_text('Mobile Authenticator App')
+                    el = driver.find_element(By.CSS_SELECTOR, 'input[aria-label="Mobile Authenticator App Code"]')
+                    el.send_keys(self.get_otp_code())
+                    el.submit()
+                else:
+                    # otherwise select IBKey and wait for it to be approved
+                    Select(el).select_by_visible_text('IB Key')
+
+                # check again for the other 2
+                el = driver.find_element(By.CSS_SELECTOR, ','.join([locator_done, locator_error]))
+
             if el.tag_name == 'div':
                 raise click.ClickException(el.get_attribute('innerHTML'))
             time.sleep(1)

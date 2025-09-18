@@ -34,7 +34,7 @@ def main():
     for s_arg in PARAM_MAP[args.script][1]:
         if s_arg[:2] == 's:':
             s_arg = s_arg[2:]
-            if s_arg in ('username', 'password'):
+            if s_arg in ('username', 'password', 'totp'):
                 s_args.append(secrets['data'][s_arg])
             else:
                 for f in secrets['fields']:
