@@ -61,6 +61,7 @@ class Args:
         help='File to store current cookies',
     )
     screenshot: bool = classyclick.Option(help='Take screenshot on exception')
+    account: int = classyclick.Option(help='Account ID (eg: Uxxxxxx) to monitor - required if you have more than one')
 
 
 @classyclick.command()
@@ -153,13 +154,40 @@ class CLI(OTPMixin, SeleniumCLI, Args):
 
     def handle(self):
         client = self.get_client()
-        r = client.get('portfolio/accounts').json()
-        acc_id = r[0]['accountId']
+        accounts = client.get('portfolio/accounts').json()
+        
+        if not accounts:
+            raise click.ClickException('No accounts?')
+        if len(accounts) == 1:
+            account = accounts[0]
+        else:
+            ids = ', '.join([account['id'] for account in accounts])
+            if not self.account:
+                raise click.ClickException(f'You have more than 1 account, you need to use --account and choose one of: {ids}')
+            for account in accounts:
+                if account['id'] == self.account:
+                    break
+            else:
+                raise click.ClickException(f'Account {self.account} not found, choose onf of {ids}')
+        
+        acc_id = account['accountId']
+        # overriden by NetLiquidation currency but keeping as a note
+        currency = account['currency']
+        net_val = 0
+
+        summary = client.get(f'portfolio2/{acc_id}/summary').json()
+        for entry in summary:
+            if entry['key'] == 'NetLiquidation':
+                net_val = entry['monetaryValue']
+                currency = entry['currency']
+                break
+        else:
+            raise click.ClickException('NetLiquidation not found')
 
         hass_data = {
-            'state': 0,
+            'state': net_val,
             'attributes': {
-                'unit_of_measurement': 'USD',
+                'unit_of_measurement': currency,
             },
         }
 
@@ -169,18 +197,12 @@ class CLI(OTPMixin, SeleniumCLI, Args):
             val = pos['marketValue']
             hass_data['attributes'][f'{ticker}_size'] = pos['position']
             hass_data['attributes'][f'{ticker}_val'] = val
-            hass_data['state'] += val
-
+            hass_data['attributes'][f'{ticker}_ccy'] = pos['currency']
 
         ledger = client.get(f'portfolio/{acc_id}/ledger').json()
         for cur, curd in ledger.items():
             ticker = cur.lower()
-            # this value is in the currency itself - for total, all of them should be converted to common/USD - FIXME
-            val = curd['cashbalance']
-            hass_data['attributes'][f'{ticker}_fiat'] = val
-            # BASE is the total of all currencies converted to account currency - only include this one in total as it already has all currencies in USD
-            if ticker == 'base':
-                hass_data['state'] += val
+            hass_data['attributes'][f'{ticker}_fiat'] = curd['cashbalance']
 
         self.pprint(hass_data)
         return hass_data
