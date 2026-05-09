@@ -8,11 +8,10 @@ from pathlib import Path
 import classyclick
 import click
 import requests
-from selenium.common.exceptions import WebDriverException
-from selenium.webdriver.common.by import By
-
 from balances_selenium import SeleniumCLI
 from balances_sms_auth import SMSAuthMixin
+from selenium.common.exceptions import WebDriverException
+from selenium.webdriver.common.by import By
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
 logger = logging.getLogger(__name__)

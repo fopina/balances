@@ -17,12 +17,11 @@ from pathlib import Path
 import classyclick
 import click
 import requests
+from balances_otp import OTPMixin
+from balances_selenium import SeleniumCLI
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.common.by import By as By
 from selenium.webdriver.support.ui import Select
-
-from balances_otp import OTPMixin
-from balances_selenium import SeleniumCLI
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
 logger = logging.getLogger(__name__)
