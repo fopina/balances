@@ -1,1 +1,2 @@
 -e libs/balances_cli
+ruff
