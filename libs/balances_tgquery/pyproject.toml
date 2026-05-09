@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "balances-tgquery"
+version = "0.1.0"
+description = "Shared Telegram prompt helpers for balances scrapers"
+requires-python = ">=3.10"
+dependencies = [
+    # FIXME: depend on balances_cli (but cannot specify local relative path...)
+]
+
+[tool.setuptools]
+packages = ["balances_tgquery"]
+
+[tool.setuptools.package-dir]
+balances_tgquery = "."

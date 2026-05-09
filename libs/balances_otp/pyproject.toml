@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "balances-otp"
+version = "0.1.0"
+description = "Shared OTP helpers for balances scrapers"
+requires-python = ">=3.10"
+dependencies = [
+    # FIXME: depend on balances_cli (but cannot specify local relative path...)
+    "onetimepass==1.0.1",
+]
+
+[tool.setuptools]
+packages = ["balances_otp"]
+
+[tool.setuptools.package-dir]
+balances_otp = "."

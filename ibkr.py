@@ -21,8 +21,8 @@ from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.common.by import By as By
 from selenium.webdriver.support.ui import Select
 
-from common.cli_ng.otp import OTPMixin
-from common.cli_ng.selenium import SeleniumCLI
+from balances_otp import OTPMixin
+from balances_selenium import SeleniumCLI
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
 logger = logging.getLogger(__name__)

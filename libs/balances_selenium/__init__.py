@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 
 import classyclick
+from balances_cli import BasicCLI
 
-from .. import webdriver
-from . import BasicCLI
+from . import webdriver
 
 
 @dataclass

@@ -1,1 +1,3 @@
 -r requirements_common_selenium.txt
+../libs/balances_sms_auth
+../libs/balances_tgquery

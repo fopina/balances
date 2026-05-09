@@ -15,6 +15,7 @@ def main():
         help='Script file to execute',
     )
     parser.add_argument('--docker', '-d', action='store_true', help='Use docker image')
+    parser.add_argument('--build', '-D', action='store_true', help='Use docker image BUT build it first')
     parser.add_argument('--selenium', '-s', type=str, help='Selenium container name (to use with --link)')
     parser.add_argument('flags', nargs=argparse.REMAINDER, help='Extra arguments to forward to script')
 
@@ -50,7 +51,9 @@ def main():
         s_args.extend(args.flags)
 
     try:
-        if args.docker:
+        if args.docker or args.build:
+            if args.build:
+                subprocess.check_call([Path(__file__).parent / 'build.py', args.script])
             if args.selenium:
                 sel = ['--link', args.selenium]
             else:
