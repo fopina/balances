@@ -3,7 +3,6 @@ from dataclasses import dataclass
 import classyclick
 import click
 import requests
-
 from balances_cli import BasicCLI
 
 

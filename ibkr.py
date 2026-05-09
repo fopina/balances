@@ -155,7 +155,7 @@ class CLI(OTPMixin, SeleniumCLI, Args):
     def handle(self):
         client = self.get_client()
         accounts = client.get('portfolio/accounts').json()
-        
+
         if not accounts:
             raise click.ClickException('No accounts?')
         if len(accounts) == 1:
@@ -163,13 +163,15 @@ class CLI(OTPMixin, SeleniumCLI, Args):
         else:
             ids = ', '.join([account['id'] for account in accounts])
             if not self.account:
-                raise click.ClickException(f'You have more than 1 account, you need to use --account and choose one of: {ids}')
+                raise click.ClickException(
+                    f'You have more than 1 account, you need to use --account and choose one of: {ids}'
+                )
             for account in accounts:
                 if account['id'] == self.account:
                     break
             else:
                 raise click.ClickException(f'Account {self.account} not found, choose onf of {ids}')
-        
+
         acc_id = account['accountId']
         # overriden by NetLiquidation currency but keeping as a note
         currency = account['currency']

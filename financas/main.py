@@ -8,10 +8,9 @@ from datetime import datetime
 import classyclick
 import click
 import requests
+from balances_cli import BasicCLI
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
-
-from balances_cli import BasicCLI
 
 logger = logging.getLogger(__name__)
 
