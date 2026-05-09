@@ -1,1 +1,2 @@
 ../libs/balances_cli
+kucoin-universal-sdk==1.3.0
