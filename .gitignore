@@ -5,3 +5,4 @@ __pycache__
 *.log
 /test_run.json
 *.egg-info
+build

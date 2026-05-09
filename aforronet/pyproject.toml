@@ -1,0 +1,11 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aforronet"
+version = "0.1.0"
+requires-python = ">=3.10"
+dependencies = [
+    "balances-cli @ file:///Users/fopina/Documents/home-dockers/balances/shared/libs/balances_cli",
+]
