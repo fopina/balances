@@ -12,7 +12,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         'script',
-        help='Script file to execute',
+        help='Balance name to execute',
     )
     parser.add_argument('--docker', '-d', action='store_true', help='Use docker image')
     parser.add_argument('--build', '-D', action='store_true', help='Use docker image BUT build it first')
@@ -20,9 +20,6 @@ def main():
     parser.add_argument('flags', nargs=argparse.REMAINDER, help='Extra arguments to forward to script')
 
     args = parser.parse_args()
-
-    if args.script.endswith('.py'):
-        args.script = args.script[:-3]
 
     assert args.script in PARAM_MAP, 'not configured'
 
@@ -60,10 +57,7 @@ def main():
                 sel = []
             subprocess.check_call(['docker', 'run', '-i'] + sel + [gen_image(args.script)] + s_args)
         else:
-            script_path = Path(f'{args.script}.py')
-            if not script_path.exists():
-                script_path = Path(args.script) / 'main.py'
-            subprocess.check_call(['python', str(script_path)] + s_args)
+            subprocess.check_call(['python', str(Path(args.script) / 'main.py')] + s_args)
     except subprocess.CalledProcessError as e:
         exit(e.returncode)
 

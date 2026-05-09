@@ -9,10 +9,7 @@ ALL_CHOICE = 'all'
 
 
 def image_name_or_script(val):
-    val = val.lower()
-    if val.endswith('.py'):
-        return val[:-3]
-    return val
+    return val.lower()
 
 
 class CLI:
