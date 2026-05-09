@@ -31,8 +31,8 @@ If you need to debug browser interaction, just open http://localhost:7900.
 * ~~[Anchor](anchor.py) - old (and failed) Terra project / [Anchorprotocol](https://app.anchorprotocol.com/)~~
 * ~~[Luna20](luna20.py) - [Terra 2.0](https://station.terra.money/) project~~
 * ~~[Celsius](celsius.py) - [Celsius](https://celsius.network/) (RIP)~~
-* [Crypto.com](cryptocom.py) - [website](https://crypto.com/) but this is for the `app` account, not the exchange
-* [Kucoin](kucoin.py) - [website](https://kucoin.com/)
+* [Crypto.com](cryptocom/main.py) - [website](https://crypto.com/) but this is for the `app` account, not the exchange
+* [Kucoin](kucoin/main.py) - [website](https://kucoin.com/)
 * ~~[Plutus](plutus.py) - [website](https://plutus.it/)~~
 
 ### Stocks
@@ -48,4 +48,4 @@ If you need to debug browser interaction, just open http://localhost:7900.
 ### Misc
 
 * ~~[Snailtrail](snailtrail.py) - snail and wallets stats for [this game](https://www.snailtrail.art/)~~
-* [Finanças](financas.py) - Portuguese tax benefits from [efaturas](https://faturas.portaldasfinancas.gov.pt/)
+* [Finanças](financas/main.py) - Portuguese tax benefits from [efaturas](https://faturas.portaldasfinancas.gov.pt/)

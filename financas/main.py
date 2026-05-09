@@ -11,7 +11,7 @@ import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
-from common.cli_ng import BasicCLI
+from balances_cli import BasicCLI
 
 logger = logging.getLogger(__name__)
 

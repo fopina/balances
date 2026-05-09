@@ -102,6 +102,20 @@ class AlpineMixin(ImageMixin):
     def service(self):
         return self._service or self.__class__.__name__.lower()
 
+    @property
+    def service_file(self):
+        script = Path(f'{self.service}.py')
+        if (self.CWD / script).exists():
+            return script
+        return Path(self.service) / 'main.py'
+
+    @property
+    def service_package_requirements(self):
+        requirements = Path(self.service) / 'requirements.txt'
+        if (self.CWD / requirements).exists():
+            return requirements
+        return None
+
     def get_tag(self):
         return self.service
 
@@ -113,17 +127,23 @@ class AlpineMixin(ImageMixin):
     def get_revision(self) -> str:
         return str(
             len(
-                subprocess.check_output(['git', 'log', '--oneline', f'{self.service}.py', 'docker'], cwd=self.CWD)
+                subprocess.check_output(['git', 'log', '--oneline', str(self.service_file), 'docker'], cwd=self.CWD)
                 .decode()
                 .splitlines()
             )
         )
 
     def get_build_args(self):
-        return {
+        package_requirements = self.service_package_requirements
+        build_args = {
             'TARGETBASE': f'{self.IMAGE_BASE}/{self.get_image()}:base-{self.PYTHON_VERSION}-{self.FLAVOR}',
             'ENTRY': self.service,
+            'ENTRY_FILE': str(self.service_file),
         }
+        if package_requirements:
+            build_args['ENTRY_PACKAGE_REQUIREMENTS'] = str(package_requirements)
+            build_args['INSTALL_ENTRY_PACKAGE_REQUIREMENTS'] = '1'
+        return build_args
 
 
 class BaseMixin(AlpineMixin, ImageMixin):

@@ -13,7 +13,7 @@ from kucoin_universal_sdk.model import (
     TransportOptionBuilder,
 )
 
-from common.cli_ng import BasicCLI
+from balances_cli import BasicCLI
 
 
 @dataclass
