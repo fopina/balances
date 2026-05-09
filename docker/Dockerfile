@@ -7,9 +7,6 @@ ARG ENTRY="anchor"
 ARG ENTRY_FILE="${ENTRY}.py"
 ARG ENTRY_PACKAGE_REQUIREMENTS="requirements/requirements_common.txt"
 ARG INSTALL_ENTRY_PACKAGE_REQUIREMENTS="0"
-RUN --mount=type=bind,source=requirements/,target=/requirements/ \
-    --mount=type=cache,target=/root/.cache/pip \
-    [ "${INSTALL_ENTRY_PACKAGE_REQUIREMENTS}" = "1" ] || [ ! -e /requirements/requirements_${ENTRY}.txt ] || pip install -r /requirements/requirements_${ENTRY}.txt
 RUN --mount=type=bind,source=${ENTRY_PACKAGE_REQUIREMENTS},target=/entry/requirements.txt \
     --mount=type=bind,source=libs,target=/libs \
     --mount=type=cache,target=/root/.cache/pip \
