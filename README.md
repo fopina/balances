@@ -43,7 +43,7 @@ If you need to debug browser interaction, just open http://localhost:7900.
 
 ### Banking
 
-* [CaixaBreak](caixabreak.py) - Portuguese [meal allowance debit card](https://www.cgd.pt/Particulares/Cartoes/Cartoes-Pre-pagos/Pages/Cartao-Pre-Pago-caixa-break.aspx)
+* ~~[CaixaBreak](caixabreak.py) - Portuguese [meal allowance debit card](https://www.cgd.pt/Particulares/Cartoes/Cartoes-Pre-pagos/Pages/Cartao-Pre-Pago-caixa-break.aspx)~~
 
 ### Misc
 
