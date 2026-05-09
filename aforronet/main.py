@@ -5,7 +5,7 @@ import classyclick
 import click
 import requests
 
-from common.cli_ng import BasicCLI
+from balances_cli import BasicCLI
 
 TAG_RE = re.compile(r'<.+?>')
 
