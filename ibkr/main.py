@@ -11,7 +11,6 @@ As Secure Login System is mandatory for anyone with TWS access, you can either:
 import json
 import logging
 import time
-from dataclasses import dataclass
 from pathlib import Path
 
 import classyclick
@@ -49,9 +48,7 @@ class Client(requests.Session):
         return self.get('sso/validate').json()
 
 
-@dataclass
-class Args:
-    # FIXME: this should be directly in CLI but classyclick does not allow ordering arguments... split for now to control inheritance order...
+class CLI(OTPMixin, SeleniumCLI):
     username: str = classyclick.Argument()
     password: str = classyclick.Argument()
     token_file: Path = classyclick.Option(
@@ -62,9 +59,6 @@ class Args:
     screenshot: bool = classyclick.Option(help='Take screenshot on exception')
     account: int = classyclick.Option(help='Account ID (eg: Uxxxxxx) to monitor - required if you have more than one')
 
-
-@classyclick.command()
-class CLI(OTPMixin, SeleniumCLI, Args):
     def get_client(self):
         if self.token_file.exists():
             cookies = json.loads(self.token_file.read_text())

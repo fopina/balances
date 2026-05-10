@@ -2,7 +2,6 @@ import html
 import logging
 import re
 import time
-from dataclasses import dataclass
 from datetime import datetime
 
 import classyclick
@@ -114,15 +113,10 @@ class Client(requests.Session):
         return data
 
 
-@dataclass
-class Args:
-    # FIXME: this should be directly in CLI but classyclick does not allow ordering arguments... split for now to control inheritance order...
+class CLI(BasicCLI):
     username: str = classyclick.Argument()
     password: str = classyclick.Argument()
 
-
-@classyclick.command()
-class CLI(BasicCLI, Args):
     def handle(self):
         # sometimes portal fails to load dashboard with a maintenance message such as:
         # '<strong>Por motivos de ordem t&eacute;cnica n&atilde;o nos &eacute; poss&iacute;vel responder ao seu pedido.'

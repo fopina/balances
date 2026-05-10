@@ -5,7 +5,6 @@ This allows collecting multiple tokens without knowing contracts in advance for 
 """
 
 from collections import defaultdict
-from dataclasses import dataclass
 
 import classyclick
 import requests
@@ -44,16 +43,11 @@ class Client(requests.Session):
         return r.json()
 
 
-@dataclass
-class Args:
-    # FIXME: this should be directly in CLI but classyclick does not allow ordering arguments... split for now to control inheritance order...
+class CLI(BasicCLI):
     wallet: str = classyclick.Argument()
     chain_id: list[int] = classyclick.Option('-c', multiple=True, help='Restrict to these chain_ids - default is all')
     no_prices: bool = classyclick.Option(help='Do not include prices for the tokens')
 
-
-@classyclick.command()
-class CLI(BasicCLI, Args):
     def handle(self):
         hass_data = {
             'state': 0,
