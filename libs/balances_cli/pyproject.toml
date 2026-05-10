@@ -8,8 +8,8 @@ version = "0.1.0"
 description = "Shared CLI helpers for balances scrapers"
 requires-python = ">=3.10"
 dependencies = [
-    "classyclick==0.6.2",
-    "requests==2.32.5",
+    "classyclick==1.0.1",
+    "requests==2.33.1",
 ]
 
 [tool.setuptools]

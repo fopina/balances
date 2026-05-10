@@ -1,5 +1,4 @@
 import re
-from dataclasses import dataclass
 
 import classyclick
 import click
@@ -99,16 +98,11 @@ class Client(requests.Session):
         return subs
 
 
-@dataclass
-class Args:
-    # FIXME: this should be directly in CLI but classyclick does not allow ordering arguments... split for now to control inheritance order...
+class CLI(BasicCLI):
     username: str = classyclick.Argument()
     password: str = classyclick.Argument()
     nif: str = classyclick.Argument()
 
-
-@classyclick.command()
-class CLI(BasicCLI, Args):
     def handle(self):
         client = Client()
         if self.insecure:

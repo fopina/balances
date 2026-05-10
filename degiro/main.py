@@ -1,5 +1,3 @@
-from dataclasses import dataclass
-
 import classyclick
 import click
 import requests
@@ -128,17 +126,12 @@ class VWDClient(Client):
         return r
 
 
-@dataclass
-class Args:
-    # FIXME: this should be directly in CLI but classyclick does not allow ordering arguments... split for now to control inheritance order...
+class CLI(OTPMixin, BasicCLI):
     username: str = classyclick.Argument()
     password: str = classyclick.Argument()
     pin: str = classyclick.Option('-p', help='use device login with this pin code (password should be device id)')
     zero: bool = classyclick.Option('-z', help='include portfolio with 0 shares')
 
-
-@classyclick.command()
-class CLI(OTPMixin, BasicCLI, Args):
     def handle(self):
         client = Client()
 

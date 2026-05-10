@@ -15,12 +15,21 @@ class TGError(Exception):
 
 @dataclass
 class TGQueryMixin:
+    """Telegram-backed interaction helpers for otherwise unattended scrapers."""
+
     tg_bot: str = classyclick.Option(
         nargs=2, metavar='TOKEN CHAT_ID', help='For interactive bits, use Telegram instead of stdin'
     )
     _tg_offset: int = 0
 
     def tg_send_message(self, text, chat_id: str = None):
+        """Send a Markdown Telegram message and fail on Bot API errors.
+
+        The default chat comes from the CLI option so scrapers normally do not
+        need to know chat ids. Telegram's JSON ``ok`` flag is checked separately
+        from HTTP status because the API can return a successful HTTP response
+        for an application-level error.
+        """
         if chat_id is None:
             chat_id = self.tg_bot[1]
 
@@ -35,6 +44,14 @@ class TGQueryMixin:
         return response_json
 
     def tg_poll_updates(self, timeout=30, retries: int = None):
+        """Yield Telegram updates using long polling and an advancing offset.
+
+        Long polling lets automation wait for human input without busy-looping.
+        ``_tg_offset`` is advanced after yielding each update so a caller can
+        finish processing the message before it is acknowledged locally. Network
+        and decode errors are retried because Telegram polling is often used from
+        transient home-network/container environments.
+        """
         _try = 0
         url = f'{TELEGRAM_API_URL}{self.tg_bot[0]}/getUpdates'
 
@@ -71,6 +88,12 @@ class TGQueryMixin:
             time.sleep(1)
 
     def tg_prompt(self, text, chat_id: str = None, retries: int = None, timeout=30) -> Optional[str]:
+        """Send a prompt and return the text of the matching Telegram reply.
+
+        Only replies to the prompt message are accepted, which avoids consuming
+        unrelated chat messages as authentication codes when multiple scrapers or
+        manual conversations share the same bot.
+        """
         sent = self.tg_send_message(text, chat_id=chat_id)
         for u in self.tg_poll_updates(retries=retries, timeout=timeout):
             if u['message'].get('reply_to_message', {}).get('message_id') == sent['result']['message_id']:

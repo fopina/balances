@@ -2,7 +2,6 @@ import json
 import logging
 import re
 import time
-from dataclasses import dataclass
 from pathlib import Path
 
 import classyclick
@@ -79,9 +78,7 @@ class Client(requests.Session):
         return r.json()
 
 
-@dataclass
-class Args:
-    # FIXME: this should be directly in CLI but classyclick does not allow ordering arguments... split for now to control inheritance order...
+class CLI(SMSAuthMixin, SeleniumCLI):
     username: str = classyclick.Argument()
     password: str = classyclick.Argument()
     screenshot: bool = classyclick.Option(help='Take screenshot on exception')
@@ -92,9 +89,6 @@ class Args:
     )
     plan_id: str = classyclick.Option(help='If more than 1 plan, use this to specify the plan ID to track')
 
-
-@classyclick.command()
-class CLI(SMSAuthMixin, SeleniumCLI, Args):
     def handle(self):
         client = self.get_client()
         balance = client.get_account_balance()

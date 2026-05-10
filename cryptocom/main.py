@@ -1,5 +1,3 @@
-from dataclasses import dataclass
-
 import classyclick
 import click
 import requests
@@ -58,16 +56,11 @@ class MissionClient(Client):
         return self.post('mission/checkin', json={'mission_id': mission_id}).json()
 
 
-@dataclass
-class Args:
-    # FIXME: this should be directly in CLI but classyclick does not allow ordering arguments... split for now to control inheritance order...
+class CLI(BasicCLI):
     track_id: str = classyclick.Argument()
     token: str = classyclick.Argument()
     skip_mission: bool = classyclick.Option(help='Skip diamond collections, just scrape balance')
 
-
-@classyclick.command()
-class CLI(BasicCLI, Args):
     def handle(self):
         hass_data = {
             'state': 0,

@@ -1,5 +1,3 @@
-from dataclasses import dataclass
-
 import classyclick
 from balances_cli import BasicCLI
 from kucoin_universal_sdk.api import DefaultClient
@@ -15,17 +13,12 @@ from kucoin_universal_sdk.model import (
 )
 
 
-@dataclass
-class Args:
-    # FIXME: this should be directly in CLI but classyclick does not allow ordering arguments... split for now to control inheritance order...
+class CLI(BasicCLI):
     key: str = classyclick.Argument()
     secret: str = classyclick.Argument()
     passphrase: str = classyclick.Argument()
     exclude_zeros: bool = classyclick.Option(help='Do not report accounts/tokens with 0 balance')
 
-
-@classyclick.command()
-class CLI(BasicCLI, Args):
     def handle(self):
         client_option = (
             ClientOptionBuilder()

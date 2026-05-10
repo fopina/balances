@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - run: |
           pip install ruff
           make lint-check
@@ -20,7 +20,7 @@ jobs:
       targets: ${{ steps.matrixTargets.outputs.targets }}
     steps:
       - name: Check out code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - id: matrixTargets
         shell: bash
         run: |
@@ -32,7 +32,7 @@ jobs:
       matrix: ${{ fromJson(needs.setup.outputs.targets) }}
     steps:
       - name: Check out code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - run: ./build.py ${{matrix.target}}
       # more tests would be nice, but at least check --help goes well (validate syntax/imports)
       - run: docker run --rm ghcr.io/fopina/balances:${{matrix.target}} --help

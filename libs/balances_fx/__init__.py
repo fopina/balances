@@ -2,11 +2,18 @@ import requests
 
 
 class CryptoFXMixin:
+    """Helpers for looking up current crypto exchange rates."""
+
     def get_crypto_fx_rate(self, tokens, currencies=['usd'], coinmarketcap_slugs=None):
         """
-        Get latest exchange rates for these tokens
+        Get latest exchange rates for these tokens.
 
-        Uses coingecko API by default but will fallback to coinmarketcap API if first is available (and coinmarketcap_slugs are specified)
+        CoinGecko is the default because its simple-price endpoint supports the
+        token ids and result shape used by these scrapers. CoinMarketCap is only
+        used as a fallback when explicit slugs are supplied, since its web API
+        identifies assets by slug and cannot be inferred safely from CoinGecko
+        ids. Multi-token fallbacks require a mapping so the returned keys stay
+        consistent with the original CoinGecko-oriented caller.
         """
         try:
             return self.get_crypto_fx_rate_coingecko(tokens, currencies=currencies)
@@ -33,9 +40,12 @@ class CryptoFXMixin:
 
     def get_crypto_fx_rate_coingecko(self, tokens, currencies=['usd']):
         """
-        Get latest exchange rates for these tokens from coingecko API
+        Get latest exchange rates for these tokens from the CoinGecko API.
 
-        `tokens` should be an `API id` (visible in the web UI) or a list of those
+        ``tokens`` should be an API id visible in the web UI, or a list of ids.
+        The response is flattened when the caller asks for exactly one token or
+        one currency because older scrapers consume scalar-ish payloads directly;
+        multi-token or multi-currency calls preserve the nested API shape.
         """
         single_token = True
         single_currency = True
@@ -61,10 +71,13 @@ class CryptoFXMixin:
 
     def get_crypto_fx_rate_coinmarketcap(self, slugs):
         """
-        Get latest exchange rates for these slugs from coinmarketcap (private but open) API
+        Get latest exchange rates for CoinMarketCap slugs.
 
-        slug is not the token symbol, look up your tokens in coinmarket web UI and the slug will be in the URL
-        eg: ...../avalanche/ (for AVAX)
+        This uses CoinMarketCap's private-but-open web endpoint as a fallback
+        when CoinGecko cannot serve the token. A slug is not the token symbol:
+        look it up in the CoinMarketCap URL, for example ``/avalanche/`` for
+        AVAX. Single-slug calls return a single price for compatibility with the
+        flattened CoinGecko path.
         """
         if not isinstance(slugs, (list, tuple)):
             slugs = [slugs]
