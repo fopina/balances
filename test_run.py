@@ -12,16 +12,14 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         'script',
-        help='Script file to execute',
+        help='Balance name to execute',
     )
     parser.add_argument('--docker', '-d', action='store_true', help='Use docker image')
+    parser.add_argument('--build', '-D', action='store_true', help='Use docker image BUT build it first')
     parser.add_argument('--selenium', '-s', type=str, help='Selenium container name (to use with --link)')
     parser.add_argument('flags', nargs=argparse.REMAINDER, help='Extra arguments to forward to script')
 
     args = parser.parse_args()
-
-    if args.script.endswith('.py'):
-        args.script = args.script[:-3]
 
     assert args.script in PARAM_MAP, 'not configured'
 
@@ -50,14 +48,16 @@ def main():
         s_args.extend(args.flags)
 
     try:
-        if args.docker:
+        if args.docker or args.build:
+            if args.build:
+                subprocess.check_call([Path(__file__).parent / 'build.py', args.script])
             if args.selenium:
                 sel = ['--link', args.selenium]
             else:
                 sel = []
             subprocess.check_call(['docker', 'run', '-i'] + sel + [gen_image(args.script)] + s_args)
         else:
-            subprocess.check_call(['python', f'{args.script}.py'] + s_args)
+            subprocess.check_call(['python', str(Path(args.script) / 'main.py')] + s_args)
     except subprocess.CalledProcessError as e:
         exit(e.returncode)
 

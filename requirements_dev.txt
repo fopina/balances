@@ -1,0 +1,7 @@
+-e libs/balances_cli
+-e libs/balances_fx
+-e libs/balances_otp
+-e libs/balances_selenium
+-e libs/balances_sms_auth
+-e libs/balances_tgquery
+ruff

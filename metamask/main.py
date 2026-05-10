@@ -9,8 +9,7 @@ from dataclasses import dataclass
 
 import classyclick
 import requests
-
-from common.cli_ng import BasicCLI
+from balances_cli import BasicCLI
 
 
 class Client(requests.Session):

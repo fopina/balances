@@ -113,17 +113,18 @@ class AlpineMixin(ImageMixin):
     def get_revision(self) -> str:
         return str(
             len(
-                subprocess.check_output(['git', 'log', '--oneline', f'{self.service}.py', 'docker'], cwd=self.CWD)
+                subprocess.check_output(['git', 'log', '--oneline', self.service, 'docker'], cwd=self.CWD)
                 .decode()
                 .splitlines()
             )
         )
 
     def get_build_args(self):
-        return {
+        build_args = {
             'TARGETBASE': f'{self.IMAGE_BASE}/{self.get_image()}:base-{self.PYTHON_VERSION}-{self.FLAVOR}',
             'ENTRY': self.service,
         }
+        return build_args
 
 
 class BaseMixin(AlpineMixin, ImageMixin):

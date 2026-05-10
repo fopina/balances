@@ -20,10 +20,6 @@ class Financas(AlpineMixin, Image):
     pass
 
 
-class CaixaBreak(AlpineMixin, Image):
-    pass
-
-
 class CryptoCom(AlpineMixin, Image):
     pass
 

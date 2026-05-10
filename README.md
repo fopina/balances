@@ -20,7 +20,7 @@ docker run --rm -d \
            -e SE_INV=a \
            -e SE_VNC_NO_PASSWORD='1' \
            -p 7900:7900 \
-           selenium/standalone-chromium:138.0
+           selenium/standalone-chromium:147.0
 ```
 
 Now, run the scraper image with `docker run ... --link selenium_balances SCRAPER_IMAGE ... --grid http://selenium_balances:4444 ...`
@@ -28,12 +28,12 @@ If you need to debug browser interaction, just open http://localhost:7900.
 
 ### Crypto
 
-* ~~[Anchor](anchor.py) - old (and failed) Terra project / [Anchorprotocol](https://app.anchorprotocol.com/)~~
-* ~~[Luna20](luna20.py) - [Terra 2.0](https://station.terra.money/) project~~
-* ~~[Celsius](celsius.py) - [Celsius](https://celsius.network/) (RIP)~~
-* [Crypto.com](cryptocom.py) - [website](https://crypto.com/) but this is for the `app` account, not the exchange
-* [Kucoin](kucoin.py) - [website](https://kucoin.com/)
-* ~~[Plutus](plutus.py) - [website](https://plutus.it/)~~
+* ~~[Anchor](archive/anchor.py) - old (and failed) Terra project / [Anchorprotocol](https://app.anchorprotocol.com/)~~
+* ~~[Luna20](archive/luna20.py) - [Terra 2.0](https://station.terra.money/) project~~
+* ~~[Celsius](archive/celsius.py) - [Celsius](https://celsius.network/) (RIP)~~
+* [Crypto.com](cryptocom/main.py) - [website](https://crypto.com/) but this is for the `app` account, not the exchange
+* [Kucoin](kucoin/main.py) - [website](https://kucoin.com/)
+* ~~[Plutus](archive/plutus.py) - [website](https://plutus.it/)~~
 
 ### Stocks
 
@@ -43,9 +43,9 @@ If you need to debug browser interaction, just open http://localhost:7900.
 
 ### Banking
 
-* ~~[CaixaBreak](caixabreak.py) - Portuguese [meal allowance debit card](https://www.cgd.pt/Particulares/Cartoes/Cartoes-Pre-pagos/Pages/Cartao-Pre-Pago-caixa-break.aspx)~~
+* ~~[CaixaBreak](archive/caixabreak.py) - Portuguese [meal allowance debit card](https://www.cgd.pt/Particulares/Cartoes/Cartoes-Pre-pagos/Pages/Cartao-Pre-Pago-caixa-break.aspx)~~
 
 ### Misc
 
-* ~~[Snailtrail](snailtrail.py) - snail and wallets stats for [this game](https://www.snailtrail.art/)~~
-* [Finanças](financas.py) - Portuguese tax benefits from [efaturas](https://faturas.portaldasfinancas.gov.pt/)
+* ~~[Snailtrail](archive/snailtrail.py) - snail and wallets stats for [this game](https://www.snailtrail.art/)~~
+* [Finanças](financas/main.py) - Portuguese tax benefits from [efaturas](https://faturas.portaldasfinancas.gov.pt/)

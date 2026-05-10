@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from selenium import webdriver
+from selenium.common import exceptions
 
 
 class ChromiumHelperMixin:
@@ -66,8 +67,5 @@ class MyDriver(webdriver.Chrome, ChromiumHelperMixin):
         if user_agent is not None:
             self.set_user_agent(user_agent)
 
-
-# monkeypatch WebDriverException to not print out stacktrace...!
-from selenium.common import exceptions  # noqa
 
 exceptions.WebDriverException.__str__ = lambda x: f'Message: {x.msg}\n'

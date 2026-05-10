@@ -6,7 +6,7 @@ from pathlib import Path
 
 import classyclick
 
-from .. import hass
+from . import hass
 
 
 @dataclass

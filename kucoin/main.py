@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 import classyclick
+from balances_cli import BasicCLI
 from kucoin_universal_sdk.api import DefaultClient
 from kucoin_universal_sdk.generate.account.account import GetSpotAccountListReq
 from kucoin_universal_sdk.generate.account.subaccount import GetSpotSubAccountListV2Req
@@ -12,8 +13,6 @@ from kucoin_universal_sdk.model import (
     ClientOptionBuilder,
     TransportOptionBuilder,
 )
-
-from common.cli_ng import BasicCLI
 
 
 @dataclass

@@ -3,8 +3,8 @@ from dataclasses import dataclass
 import classyclick
 import click
 import requests
-
-from common.cli_ng import BasicCLI, otp
+from balances_cli import BasicCLI
+from balances_otp import OTPMixin
 
 
 class Client(requests.Session):
@@ -138,7 +138,7 @@ class Args:
 
 
 @classyclick.command()
-class CLI(otp.OTPMixin, BasicCLI, Args):
+class CLI(OTPMixin, BasicCLI, Args):
     def handle(self):
         client = Client()
 
