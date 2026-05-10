@@ -9,7 +9,8 @@ RUN --mount=type=bind,source=${ENTRY}/requirements.txt,target=/entry/requirement
     cp /entry/requirements.txt /tmp/entry/requirements.txt && \
     cp -a /libs/. /tmp/libs/ && \
     cd /tmp/entry && \
-    pip install -r requirements.txt
+    pip install -r requirements.txt && \
+    rm -fr /tmp/libs /tmp/entry
 COPY ${ENTRY}/main.py /entry.py
 ENV BALANCE_ENTRY="${ENTRY}"
 
