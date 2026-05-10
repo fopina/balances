@@ -20,7 +20,7 @@ docker run --rm -d \
            -e SE_INV=a \
            -e SE_VNC_NO_PASSWORD='1' \
            -p 7900:7900 \
-           selenium/standalone-chromium:138.0
+           selenium/standalone-chromium:147.0
 ```
 
 Now, run the scraper image with `docker run ... --link selenium_balances SCRAPER_IMAGE ... --grid http://selenium_balances:4444 ...`

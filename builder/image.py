@@ -102,10 +102,6 @@ class AlpineMixin(ImageMixin):
     def service(self):
         return self._service or self.__class__.__name__.lower()
 
-    @property
-    def service_file(self):
-        return Path(self.service) / 'main.py'
-
     def get_tag(self):
         return self.service
 
@@ -117,7 +113,7 @@ class AlpineMixin(ImageMixin):
     def get_revision(self) -> str:
         return str(
             len(
-                subprocess.check_output(['git', 'log', '--oneline', str(self.service_file), 'docker'], cwd=self.CWD)
+                subprocess.check_output(['git', 'log', '--oneline', self.service, 'docker'], cwd=self.CWD)
                 .decode()
                 .splitlines()
             )
@@ -127,7 +123,6 @@ class AlpineMixin(ImageMixin):
         build_args = {
             'TARGETBASE': f'{self.IMAGE_BASE}/{self.get_image()}:base-{self.PYTHON_VERSION}-{self.FLAVOR}',
             'ENTRY': self.service,
-            'ENTRY_FILE': str(self.service_file),
         }
         return build_args
 
