@@ -35,13 +35,9 @@ class TGQueryMixin:
         if chat_id is None:
             chat_id = self.tg_bot[1]
 
-        data = {'chat_id': chat_id, 'text': text, 'parse_mode': 'Markdown'}
-        if self.tg_topic_id is not None:
-            data['message_thread_id'] = self.tg_topic_id
-
         response = requests.post(
             f'{TELEGRAM_API_URL}{self.tg_bot[0]}/sendMessage',
-            data=data,
+            data={'chat_id': chat_id, 'text': text, 'parse_mode': 'Markdown', 'message_thread_id': self.tg_topic_id},
         )
         response.raise_for_status()
         response_json = response.json()
@@ -121,9 +117,7 @@ class TGQueryMixin:
         """
         sent = self.tg_send_message(text, chat_id=chat_id)
         for u in self.tg_poll_updates(retries=retries, timeout=timeout):
-            if 'message' not in u:
-                continue
-            if u['message'].get('reply_to_message', {}).get('message_id') == sent['result']['message_id']:
+            if u.get('message', {}).get('reply_to_message', {}).get('message_id') == sent['result']['message_id']:
                 if self.ack_reply:
                     self.tg_set_message_reaction(u['message']['message_id'], chat_id=u['message']['chat']['id'])
                 return u['message']['text']
