@@ -20,6 +20,7 @@ class TGQueryMixin:
     tg_bot: str = classyclick.Option(
         nargs=2, metavar='TOKEN CHAT_ID', help='For interactive bits, use Telegram instead of stdin'
     )
+    ack_reply: bool = True
     _tg_offset: int = 0
 
     def tg_send_message(self, text, chat_id: str = None):
@@ -116,5 +117,6 @@ class TGQueryMixin:
         sent = self.tg_send_message(text, chat_id=chat_id)
         for u in self.tg_poll_updates(retries=retries, timeout=timeout):
             if u['message'].get('reply_to_message', {}).get('message_id') == sent['result']['message_id']:
-                self.tg_set_message_reaction(u['message']['message_id'], chat_id=u['message']['chat']['id'])
+                if self.ack_reply:
+                    self.tg_set_message_reaction(u['message']['message_id'], chat_id=u['message']['chat']['id'])
                 return u['message']['text']
