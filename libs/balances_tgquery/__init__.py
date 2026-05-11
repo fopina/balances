@@ -20,6 +20,8 @@ class TGQueryMixin:
     tg_bot: str = classyclick.Option(
         nargs=2, metavar='TOKEN CHAT_ID', help='For interactive bits, use Telegram instead of stdin'
     )
+    ack_reply: bool = True
+    tg_topic_id: Optional[int] = None
     _tg_offset: int = 0
 
     def tg_send_message(self, text, chat_id: str = None):
@@ -35,7 +37,7 @@ class TGQueryMixin:
 
         response = requests.post(
             f'{TELEGRAM_API_URL}{self.tg_bot[0]}/sendMessage',
-            data={'chat_id': chat_id, 'text': text, 'parse_mode': 'Markdown'},
+            data={'chat_id': chat_id, 'text': text, 'parse_mode': 'Markdown', 'message_thread_id': self.tg_topic_id},
         )
         response.raise_for_status()
         response_json = response.json()
@@ -87,6 +89,25 @@ class TGQueryMixin:
 
             time.sleep(1)
 
+    def tg_set_message_reaction(self, message_id: int, chat_id: str = None, emoji='👍'):
+        """Add an emoji reaction to a Telegram message."""
+        if chat_id is None:
+            chat_id = self.tg_bot[1]
+
+        response = requests.post(
+            f'{TELEGRAM_API_URL}{self.tg_bot[0]}/setMessageReaction',
+            data={
+                'chat_id': chat_id,
+                'message_id': message_id,
+                'reaction': json.dumps([{'type': 'emoji', 'emoji': emoji}]),
+            },
+        )
+        response.raise_for_status()
+        response_json = response.json()
+        if not response_json['ok']:
+            raise TGError(response_json.get('description', 'Unknown error'))
+        return response_json
+
     def tg_prompt(self, text, chat_id: str = None, retries: int = None, timeout=30) -> Optional[str]:
         """Send a prompt and return the text of the matching Telegram reply.
 
@@ -96,5 +117,7 @@ class TGQueryMixin:
         """
         sent = self.tg_send_message(text, chat_id=chat_id)
         for u in self.tg_poll_updates(retries=retries, timeout=timeout):
-            if u['message'].get('reply_to_message', {}).get('message_id') == sent['result']['message_id']:
+            if u.get('message', {}).get('reply_to_message', {}).get('message_id') == sent['result']['message_id']:
+                if self.ack_reply:
+                    self.tg_set_message_reaction(u['message']['message_id'], chat_id=u['message']['chat']['id'])
                 return u['message']['text']
