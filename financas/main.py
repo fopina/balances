@@ -96,9 +96,9 @@ class Client(requests.Session):
         response.raise_for_status()
         m = re.findall(
             r'<div class="benef-icon atf atf-(.*?)"></div>'
-            r'\s*<div class="benefbox1-title">\s*<div>\s*<h2>(.*?)</h2>\s*</div>\s*</div>'
+            r'\s*<div class="benefbox1-title(?: titulo-grande)?"\s*>\s*<div>\s*<h2>(.*?)</h2>\s*</div>\s*</div>'
             r'\s*<span class="euro-value">(.*?) &euro;</span>'
-            r'\s*<p>(.*?)</p>',
+            r'\s*<p.*?>(.*?)</p>',
             response.text,
             re.DOTALL,
         )
