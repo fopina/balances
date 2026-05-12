@@ -15,9 +15,10 @@ class SeleniumCLI(BasicCLI):
         """Create the appropriate local or remote Chromium driver.
 
         Headless mode is the default because these scrapers normally run in
-        automation, but callers can still pass an explicit ``headless`` value for
-        one-off debugging. The default user agent masks Selenium's headless
-        signature unless a scraper has a site-specific reason to override it.
+        automation, but callers can still pass an explicit ``headless`` value
+        for one-off debugging. The default user agent masks Chrome-for-Testing's
+        headless signature unless a scraper has a site-specific reason to use
+        the browser's raw UA.
         """
         kwargs['user_agent'] = user_agent
         if 'headless' not in kwargs:
