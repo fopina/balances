@@ -22,6 +22,7 @@ class Client(requests.Session):
 
     def request(self, method, url, *args, **kwargs):
         url = f'{self.URL}{url.lstrip("/")}'
+        kwargs.setdefault('timeout', 60)
         r = super().request(method, url, *args, **kwargs)
         r.raise_for_status()
         return r

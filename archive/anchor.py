@@ -11,7 +11,7 @@ def post(url, data, headers=None):
         headers = {}
     headers.update({'Content-Type': 'application/json', 'User-Agent': 'curl/7.79.1'})
     req = urllib.request.Request(url, data=json.dumps(data).encode(), headers=headers)
-    with urllib.request.urlopen(req) as response:
+    with urllib.request.urlopen(req, timeout=60) as response:
         return json.loads(response.read())
 
 
@@ -24,7 +24,8 @@ def query(query, variables={}):
 
 def usd_rate():
     with urllib.request.urlopen(
-        'https://api.coingecko.com/api/v3/simple/price?ids=terrausd&vs_currencies=usd'
+        'https://api.coingecko.com/api/v3/simple/price?ids=terrausd&vs_currencies=usd',
+        timeout=60,
     ) as response:
         return json.loads(response.read())['terrausd']['usd']
 

@@ -56,7 +56,9 @@ class CryptoFXMixin:
             single_currency = len(currencies) == 1
             currencies = ','.join(currencies)
         r = requests.get(
-            'https://api.coingecko.com/api/v3/simple/price', params={'ids': tokens, 'vs_currencies': currencies}
+            'https://api.coingecko.com/api/v3/simple/price',
+            params={'ids': tokens, 'vs_currencies': currencies},
+            timeout=60,
         )
         r.raise_for_status()
         data = r.json()
@@ -85,7 +87,9 @@ class CryptoFXMixin:
         all_data = {}
         for slug in slugs:
             r = requests.get(
-                'https://api.coinmarketcap.com/aggr/v3/web/coin-detail', params={'slug': slug, 'langCode': 'en'}
+                'https://api.coinmarketcap.com/aggr/v3/web/coin-detail',
+                params={'slug': slug, 'langCode': 'en'},
+                timeout=60,
             )
             r.raise_for_status()
             data = r.json()

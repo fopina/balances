@@ -32,6 +32,7 @@ class Client(requests.Session):
     def request(self, method: str, url: str, *args, **kwargs):
         if not url.startswith('https://'):
             url = f'{self.URL}{url.lstrip("/")}'
+        kwargs.setdefault('timeout', 60)
         return super().request(method, url, *args, **kwargs)
 
     def load_plan_data(self):

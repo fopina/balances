@@ -11,7 +11,7 @@ class Client:
 
     def get(self, url):
         req = urllib.request.Request(url, headers=self._headers)
-        with urllib.request.urlopen(req) as response:
+        with urllib.request.urlopen(req, timeout=60) as response:
             return json.loads(response.read())
 
 

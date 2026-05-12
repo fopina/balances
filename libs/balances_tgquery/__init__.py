@@ -38,6 +38,7 @@ class TGQueryMixin:
         response = requests.post(
             f'{TELEGRAM_API_URL}{self.tg_bot[0]}/sendMessage',
             data={'chat_id': chat_id, 'text': text, 'parse_mode': 'Markdown', 'message_thread_id': self.tg_topic_id},
+            timeout=60,
         )
         response.raise_for_status()
         response_json = response.json()
@@ -69,7 +70,7 @@ class TGQueryMixin:
 
             try:
                 # Use long polling to wait for new updates
-                response = requests.get(url, params=params)
+                response = requests.get(url, params=params, timeout=60 if not timeout else timeout + 10)
                 response.raise_for_status()
                 updates = response.json()['result']
 
@@ -101,6 +102,7 @@ class TGQueryMixin:
                 'message_id': message_id,
                 'reaction': json.dumps([{'type': 'emoji', 'emoji': emoji}]),
             },
+            timeout=60,
         )
         response.raise_for_status()
         response_json = response.json()

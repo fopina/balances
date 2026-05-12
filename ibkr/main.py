@@ -40,6 +40,7 @@ class Client(requests.Session):
 
     def request(self, method: str, url: str, *args, **kwargs):
         url = url if url.startswith('https://') else f'{self.URL}{url}'
+        kwargs.setdefault('timeout', 60)
         r = super().request(method, url, *args, **kwargs)
         r.raise_for_status()
         return r
