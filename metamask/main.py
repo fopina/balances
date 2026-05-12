@@ -21,6 +21,10 @@ class Client(requests.Session):
             }
         )
 
+    def request(self, method, url, *args, **kwargs):
+        kwargs.setdefault('timeout', 60)
+        return super().request(method, url, *args, **kwargs)
+
     def accounts(self, wallet, networks: list[int] = None):
         if networks:
             networks = ','.join(map(str, networks))

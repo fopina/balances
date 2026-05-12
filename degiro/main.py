@@ -18,6 +18,7 @@ class Client(requests.Session):
 
     def request(self, method, url, *args, **kwargs):
         url = f'{self.URL}{url.lstrip("/")}'
+        kwargs.setdefault('timeout', 60)
         return super().request(method, url, *args, **kwargs)
 
     def login(self, username, password, otp=None, pin_code=None):

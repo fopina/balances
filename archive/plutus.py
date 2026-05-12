@@ -45,6 +45,7 @@ class Client(requests.Session):
         self.update_auth(r['id_token'])
 
     def request(self, method, url, *args, **kwargs):
+        kwargs.setdefault('timeout', 60)
         r = super().request(method, url or self.URL, *args, **kwargs)
         r.raise_for_status()
         return r

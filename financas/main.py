@@ -28,6 +28,10 @@ class Client(requests.Session):
         self.mount('https://', adapter)
         self.mount('http://', adapter)
 
+    def request(self, method, url, *args, **kwargs):
+        kwargs.setdefault('timeout', 60)
+        return super().request(method, url, *args, **kwargs)
+
     def login(self, username, password):
         r = self.get('https://www.acesso.gov.pt/jsp/loginRedirectForm.jsp?path=painelAdquirente.action&partID=EFPF')
         r.raise_for_status()

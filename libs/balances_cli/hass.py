@@ -17,6 +17,7 @@ def push_to_hass(hass_url, hass_token, hass_data, verify=True):
         json=hass_data,
         headers={'Authorization': f'Bearer {hass_token}'},
         verify=verify,
+        timeout=60,
     )
     r.raise_for_status()
     print(r.json())
