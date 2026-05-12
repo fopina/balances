@@ -1,14 +1,18 @@
+import asyncio
 import json
 import logging
 import re
+import tempfile
 import time
 from pathlib import Path
 
 import classyclick
 import click
+import nodriver as uc
 import requests
 from balances_selenium import SeleniumCLI
 from balances_sms_auth import SMSAuthMixin
+from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.common.by import By
 
@@ -24,7 +28,7 @@ class Client(requests.Session):
         self.cookies.update(cookies)
         self.headers.update(
             {
-                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:106.0) Gecko/20100101 Firefox/106.0',
+                'User-Agent': SeleniumCLI.DEFAULT_USER_AGENT,
             }
         )
         self._client_id = None
@@ -163,21 +167,150 @@ class CLI(SMSAuthMixin, SeleniumCLI):
         return client
 
     def login_and_token(self):
+        return asyncio.run(self.login_and_token_nodriver())
+
+    def nodriver_chrome_path(self):
+        chrome_path = Path(
+            '/Users/fopina/.cache/selenium/chrome/mac-arm64/141.0.7390.76/'
+            'Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing'
+        )
+        if chrome_path.exists():
+            return chrome_path
+        return None
+
+    async def login_and_token_nodriver(self):
         logger.info('logging in')
-        driver = self.get_webdriver()
-        driver.implicitly_wait(20)
         cookies = {}
+        profile_dir = tempfile.TemporaryDirectory(prefix='fidelity-chrome-profile-')
+        browser = None
+        browser_args = [
+            '--no-first-run',
+            '--no-default-browser-check',
+            '--disable-search-engine-choice-screen',
+            '--lang=en-US,en',
+            '--window-size=1366,900',
+            f'--user-agent={SeleniumCLI.DEFAULT_USER_AGENT}',
+        ]
 
         try:
+            browser = await uc.start(
+                user_data_dir=profile_dir.name,
+                headless=not self.headful,
+                browser_executable_path=self.nodriver_chrome_path(),
+                browser_args=browser_args,
+                lang='en-US',
+            )
+            page = await browser.get('https://nb.fidelity.com/public/nb/worldwide/home')
+            logger.info('wait for form...')
+            username = await page.select('#dom-username-input', timeout=30)
+            if username is None:
+                raise click.ClickException('Failed login: username form not found')
+            logger.info('found login form')
+            await page.sleep(5)
+            await username.click()
+            await username.send_keys(self.username)
+
+            password = await page.select('#dom-pswd-input', timeout=20)
+            if password is None:
+                raise click.ClickException('Failed login: password form not found')
+            await password.click()
+            await password.send_keys(self.password)
+
+            await page.sleep(3)
+            button = await page.select('#dom-login-button', timeout=20)
+            if button is None:
+                raise click.ClickException('Failed login: login button not found')
+            await button.click()
+
+            for _ in range(300):
+                print('.', end='')
+                current_url = await page.evaluate('location.href', return_by_value=True)
+                content = await page.get_content()
+                if 'navigation/PlanSummary' in current_url:
+                    break
+                if 'pvd-alert__message' in content:
+                    alert = await page.select('p.pvd-alert__message', timeout=1)
+                    alert_text = alert.text.strip() if alert else 'unknown login error'
+                    raise click.ClickException(f'Failed login: {alert_text}')
+                if """Sorry, we can't complete this action right now.""" in content:
+                    if self.headful:
+                        print('Failed login: CANNOT DO THIS RIGHT NOW???')
+                        await page.sleep(1000)
+                    raise click.ClickException('Failed login: CANNOT DO THIS RIGHT NOW???')
+                if """we'll send a temporary code to your phone""" in content:
+                    print('NEED SMS AUTH')
+                    self.fail_if_no_sms_auth()
+                    sms_button = await page.select('#dom-channel-list-primary-button', timeout=20)
+                    assert sms_button and sms_button.text == 'Text me the code', (
+                        'Text me button does not have the right label'
+                    )
+
+                    cookie_button = await page.select('#onetrust-accept-btn-handler', timeout=3)
+                    if cookie_button:
+                        await cookie_button.click()
+
+                    await sms_button.click()
+
+                    sms_code = self.prompt_code()
+                    otp_checkbox = await page.select('#dom-trust-device-checkbox', timeout=20)
+                    if otp_checkbox:
+                        await otp_checkbox.apply('(elem) => { if (!elem.checked) elem.click(); }')
+
+                    otp_input = await page.select('#dom-otp-code-input', timeout=20)
+                    if otp_input is None:
+                        raise click.ClickException('Failed login: SMS input not found')
+                    await otp_input.send_keys(sms_code)
+                    await otp_input.send_keys('\n')
+                await page.sleep(0.1)
+            else:
+                raise Exception('timed out logging in...')
+
+            browser_cookies = await browser.cookies.get_all()
+            cookies.update({c.name: c.value for c in browser_cookies})
+        except Exception:
+            if self.screenshot and browser is not None:
+                await page.save_screenshot(self.screenshot)
+            raise
+        finally:
+            if browser is not None:
+                browser.stop()
+            profile_dir.cleanup()
+
+        return cookies
+
+    def login_and_token_selenium(self):
+        logger.info('logging in')
+        cookies = {}
+        options = webdriver.ChromeOptions()
+        options.add_argument('--no-first-run')
+        options.add_argument('--no-default-browser-check')
+        profile_dir = tempfile.TemporaryDirectory(prefix='fidelity-chrome-profile-')
+        options.add_argument(f'--user-data-dir={profile_dir.name}')
+
+        driver = None
+
+        try:
+            driver = self.get_webdriver(options=options)
+            driver.implicitly_wait(20)
             driver.get('https://nb.fidelity.com/public/nb/worldwide/home')
             logger.info('wait for form...')
             logger.info('found login form')
+            time.sleep(5)
             el = driver.find_element(By.ID, 'dom-username-input')
-            el.send_keys(self.username)
+            el.click()
+            for char in self.username:
+                el.send_keys(char)
+                time.sleep(0.08)
 
             el = driver.find_element(By.ID, 'dom-pswd-input')
-            el.send_keys(self.password)
-            el.send_keys('\n')
+            el.click()
+            for char in self.password:
+                el.send_keys(char)
+                time.sleep(0.08)
+
+            time.sleep(0.4)
+            time.sleep(3)
+            driver.find_element(By.ID, 'dom-login-button').click()
 
             for _ in range(300):
                 print('.', end='')
@@ -188,8 +321,12 @@ class CLI(SMSAuthMixin, SeleniumCLI):
                     raise click.ClickException(f'Failed login: {el.text.strip()}')
                 if """Sorry, we can't complete this action right now.""" in driver.page_source:
                     # rate limiting on failed logins...?
+                    if self.headful:
+                        print('Failed login: CANNOT DO THIS RIGHT NOW???')
+                        time.sleep(1000)
                     raise click.ClickException('Failed login: CANNOT DO THIS RIGHT NOW???')
                 if """we'll send a temporary code to your phone""" in driver.page_source:
+                    print('NEED SMS AUTH')
                     self.fail_if_no_sms_auth()
                     el_sms = driver.find_element(By.ID, 'dom-channel-list-primary-button')
                     assert el_sms.text == 'Text me the code', 'Text me button does not have the right label'
@@ -216,11 +353,13 @@ class CLI(SMSAuthMixin, SeleniumCLI):
 
             cookies.update({c['name']: c['value'] for c in driver.get_cookies()})
         except Exception:
-            if self.screenshot:
+            if self.screenshot and driver is not None:
                 driver.save_screenshot(self.screenshot)
             raise
         finally:
-            driver.quit()
+            if driver is not None:
+                driver.quit()
+            profile_dir.cleanup()
 
         return cookies
 
