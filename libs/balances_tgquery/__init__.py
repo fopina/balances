@@ -70,7 +70,7 @@ class TGQueryMixin:
 
             try:
                 # Use long polling to wait for new updates
-                response = requests.get(url, params=params, timeout=60)
+                response = requests.get(url, params=params, timeout=60 if not timeout else timeout + 10)
                 response.raise_for_status()
                 updates = response.json()['result']
 
