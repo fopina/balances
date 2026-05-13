@@ -32,10 +32,6 @@ class IBKR(AlpineMixin, Image):
     pass
 
 
-class Fidelity(AlpineMixin, Image):
-    pass
-
-
 class BaseAlpine(BaseMixin, Image):
     PYTHON_VERSION = 3.13
 
