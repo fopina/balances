@@ -31,7 +31,8 @@ If you need to debug browser interaction, just open http://localhost:7900.
 
 * [Degiro](degiro.py) - [website](https://www.degiro.nl/)
 * [Interactive Brokers](ibfetch.py) - [website](https://www.interactivebrokers.co.uk/)
-* [Fidelity](fidelity.py) - [website](https://nb.fidelity.com/)
+* ~~[Fidelity](fidelity.py) - [website](https://nb.fidelity.com/)~~
+  * No point fighting Akamai bot detection for a portfolio that changes so seldomly: it can easily be replaced with static inventory with public quotes
 
 ### Banking
 
