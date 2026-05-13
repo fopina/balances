@@ -109,6 +109,13 @@ class MyDriver(webdriver.Chrome, ChromiumHelperMixin):
             # for dev environment
             options.binary_location = '/Applications/Chromium.app/Contents/MacOS/Chromium'
 
+        if Path(
+            '/Users/fopina/.cache/selenium/chrome/mac-arm64/148.0.7778.167/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing'
+        ).exists():
+            options.binary_location = Path(
+                '/Users/fopina/.cache/selenium/chrome/mac-arm64/148.0.7778.167/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing'
+            )
+
         if headless:
             self.go_headless(options)
         if remote_debug_port:

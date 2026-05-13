@@ -19,6 +19,14 @@ class SeleniumCLI(BasicCLI):
         one-off debugging. The default user agent masks Selenium's headless
         signature unless a scraper has a site-specific reason to override it.
         """
+        import undetected_chromedriver as uc
+
+        driver = uc.Chrome(
+            headless=not self.headful,
+            use_subprocess=False,
+            browser_executable_path='/Users/fopina/.cache/selenium/chrome/mac-arm64/148.0.7778.167/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing',
+        )
+        return driver
         kwargs['user_agent'] = user_agent
         if 'headless' not in kwargs:
             kwargs['headless'] = not self.headful

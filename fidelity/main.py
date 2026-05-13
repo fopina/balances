@@ -188,6 +188,8 @@ class CLI(SMSAuthMixin, SeleniumCLI):
                     raise click.ClickException(f'Failed login: {el.text.strip()}')
                 if """Sorry, we can't complete this action right now.""" in driver.page_source:
                     # rate limiting on failed logins...?
+                    if self.headful:
+                        time.sleep(1000)
                     raise click.ClickException('Failed login: CANNOT DO THIS RIGHT NOW???')
                 if """we'll send a temporary code to your phone""" in driver.page_source:
                     self.fail_if_no_sms_auth()
