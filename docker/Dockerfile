@@ -11,7 +11,9 @@ RUN --mount=type=bind,source=${ENTRY}/requirements.txt,target=/entry/requirement
     cd /tmp/entry && \
     pip install -r requirements.txt && \
     rm -fr /tmp/libs /tmp/entry
-COPY ${ENTRY}/main.py /entry.py
+COPY ${ENTRY} /${ENTRY}
+COPY docker/entrypoint.sh /entrypoint.sh
+
 ENV BALANCE_ENTRY="${ENTRY}"
 
-ENTRYPOINT [ "python", "-u", "/entry.py" ]
+ENTRYPOINT ["/entrypoint.sh"]

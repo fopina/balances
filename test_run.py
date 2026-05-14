@@ -57,7 +57,7 @@ def main():
                 sel = []
             subprocess.check_call(['docker', 'run', '-i'] + sel + [gen_image(args.script)] + s_args)
         else:
-            subprocess.check_call(['python', str(Path(args.script) / 'main.py')] + s_args)
+            subprocess.check_call(['python', str(Path(args.script))] + s_args)
     except subprocess.CalledProcessError as e:
         exit(e.returncode)
 
