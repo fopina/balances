@@ -40,8 +40,13 @@ class Client(requests.Session):
     def earn_overview(self):
         return self.get('api/v2/crypto_earn/account/show').json()
 
+    def daily_reward(self):
+        return self.get('api/v1/airdrop-arena/daily-reward').json()
+
 
 class MissionClient(Client):
+    """Legacy missions API, no longer used in the app but still available."""
+
     URL = 'https://missions-api.crypto.com/api/'
 
     def center(self):
@@ -55,6 +60,41 @@ class MissionClient(Client):
 
     def mission_checkin(self, mission_id):
         return self.post('mission/checkin', json={'mission_id': mission_id}).json()
+
+
+class RewardsHubClient(Client):
+    """Native Rewards Hub API discovered in the Crypto.com app."""
+
+    URL = 'https://missions-api.crypto.com/'
+
+    def missions(self):
+        return self.get('api/v1/missions').json()
+
+    def checkin_detail(self):
+        return self.get('api/v1/mission/check-in/detail').json()
+
+    def claim_checkin(self, payload):
+        """Claim check-in using the request body captured from the app."""
+        return self.post('api/v1/mission/check-in/claim', json=payload).json()
+
+    def claim_mission(self, payload):
+        """Claim another mission using the request body captured from the app."""
+        return self.post('api/v1/mission/claim', json=payload).json()
+
+
+class RipsClient(Client):
+    URL = 'https://main-app-us-bff.mona.co/api/proxy/rips/'
+
+    def __init__(self, track_id, token, device_id):
+        super().__init__(track_id, token)
+        self.headers['X-App-Device-Id'] = device_id
+
+    def claimable_packs(self):
+        return self.get('api/v1/packs/claimable').json()
+
+    def claim_pack(self, payload):
+        """Claim packs using the request body captured from the app."""
+        return self.post('api/v1/packs/claim', json=payload).json()
 
 
 class CLI(BasicCLI):
