@@ -166,6 +166,17 @@ class CLI(BasicCLI):
                 d = mclient.track_activate(track['track_id'])
                 if not d['ok']:
                     raise Exception(d)
+                for mission in track['missions']:
+                    if mission['mission_name_translation_key'] != (
+                        'mission_detail__title_check_in'
+                    ):
+                        continue
+                    if mission['streak_complete']:
+                        continue
+                    print('mission: checking in')
+                    d = mclient.mission_checkin(mission['mission_id'])
+                    if not d['ok']:
+                        raise Exception(d)
 
             hass_data['attributes']['diamonds'] = vault_diamonds
             print(f'diamonds: {vault_diamonds}')
