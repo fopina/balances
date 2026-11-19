@@ -1,5 +1,3 @@
-import json
-
 import classyclick
 import click
 import requests
@@ -77,9 +75,7 @@ class RewardsHubClient(Client):
 
     def claim_checkin(self, mission_id):
         """Claim check-in using the mission ID from the detail response."""
-        return self.post(
-            'api/v1/mission/check-in/claim', json={'mission_id': mission_id}
-        ).json()
+        return self.post('api/v1/mission/check-in/claim', json={'mission_id': mission_id}).json()
 
     def claim_mission(self, payload):
         """Claim another mission using the request body captured from the app."""
@@ -168,9 +164,7 @@ class CLI(BasicCLI):
                 if not d['ok']:
                     raise Exception(d)
                 for mission in track['missions']:
-                    if mission['mission_name_translation_key'] != (
-                        'mission_detail__title_check_in'
-                    ):
+                    if mission['mission_name_translation_key'] != ('mission_detail__title_check_in'):
                         continue
                     if mission['streak_complete']:
                         continue
@@ -194,10 +188,7 @@ class CLI(BasicCLI):
             claim_result = rewards.claim_checkin(mission_id)
             reward_amount = claim_result['reward_amount']
             hass_data['attributes']['claims'] += 1
-            print(
-                f'check-in claim: {reward_amount["amount"]} '
-                f'{reward_amount["currency"]}'
-            )
+            print(f'check-in claim: {reward_amount["amount"]} {reward_amount["currency"]}')
 
         claimable_packs = rips.claimable_packs()
         print(f'rips has_more: {claimable_packs["has_more"]}')
