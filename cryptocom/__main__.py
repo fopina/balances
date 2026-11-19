@@ -112,6 +112,7 @@ class CLI(BasicCLI):
             'state': 0,
             'attributes': {
                 'unit_of_measurement': 'EUR',
+                'claims': 0,
             },
         }
 
@@ -177,6 +178,7 @@ class CLI(BasicCLI):
                     d = mclient.mission_checkin(mission['mission_id'])
                     if not d['ok']:
                         raise Exception(d)
+                    hass_data['attributes']['claims'] += 1
 
             hass_data['attributes']['diamonds'] = vault_diamonds
             print(f'diamonds: {vault_diamonds}')
@@ -191,6 +193,7 @@ class CLI(BasicCLI):
             print('check-in is unclaimed, claiming it...')
             claim_result = rewards.claim_checkin(mission_id)
             reward_amount = claim_result['reward_amount']
+            hass_data['attributes']['claims'] += 1
             print(
                 f'check-in claim: {reward_amount["amount"]} '
                 f'{reward_amount["currency"]}'
