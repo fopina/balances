@@ -1,3 +1,5 @@
+import json
+
 import classyclick
 import click
 import requests
@@ -85,9 +87,10 @@ class RewardsHubClient(Client):
 class RipsClient(Client):
     URL = 'https://main-app-us-bff.mona.co/api/proxy/rips/'
 
-    def __init__(self, track_id, token, device_id):
+    def __init__(self, track_id, token, device_id=None):
         super().__init__(track_id, token)
-        self.headers['X-App-Device-Id'] = device_id
+        if device_id:
+            self.headers['X-App-Device-Id'] = device_id
 
     def claimable_packs(self):
         return self.get('api/v1/packs/claimable').json()
@@ -172,6 +175,19 @@ class CLI(BasicCLI):
 
             hass_data['attributes']['diamonds'] = vault_diamonds
             print(f'diamonds: {vault_diamonds}')
+
+        print('\nNew Crypto.com endpoint responses:')
+        rewards = RewardsHubClient(self.track_id, self.token)
+        rips = RipsClient(self.track_id, self.token)
+        for name, result in (('check-in detail', rewards.checkin_detail()),):
+            print(f'\n{name}:')
+            print(json.dumps(result, indent=2, ensure_ascii=False))
+
+        claimable_packs = rips.claimable_packs()
+        print(f'\nRips claimable packs has_more: {claimable_packs["has_more"]}')
+
+        daily_reward = client.daily_reward()
+        print(f'\nAirdrop Arena daily reward points: {daily_reward["points"]}')
 
         print(f'\nTotal: {hass_data["state"]}')
         return hass_data
