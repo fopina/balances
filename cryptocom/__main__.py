@@ -198,9 +198,11 @@ class CLI(BasicCLI):
 
         claimable_packs = rips.claimable_packs()
         print(f'rips has_more: {claimable_packs["has_more"]}')
+        hass_data['attributes']['rips_has_more'] = claimable_packs['has_more']
 
         daily_reward = client.daily_reward()
         print(f'airdrop arena points: {daily_reward["points"]}')
+        hass_data['attributes']['airdrop_arena_points'] = float(daily_reward['points'])
 
         print(f'\nTotal: {hass_data["state"]}')
         return hass_data
