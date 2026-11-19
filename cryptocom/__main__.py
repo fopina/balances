@@ -73,9 +73,9 @@ class RewardsHubClient(Client):
     def checkin_detail(self):
         return self.get('api/v1/mission/check-in/detail').json()
 
-    def claim_checkin(self, payload):
-        """Claim check-in using the request body captured from the app."""
-        return self.post('api/v1/mission/check-in/claim', json=payload).json()
+    def claim_checkin(self, mission_id):
+        """Claim check-in using the mission ID from the detail response."""
+        return self.post('api/v1/mission/check-in/claim', json={'mission_id': mission_id}).json()
 
     def claim_mission(self, payload):
         """Claim another mission using the request body captured from the app."""
@@ -85,9 +85,10 @@ class RewardsHubClient(Client):
 class RipsClient(Client):
     URL = 'https://main-app-us-bff.mona.co/api/proxy/rips/'
 
-    def __init__(self, track_id, token, device_id):
+    def __init__(self, track_id, token, device_id=None):
         super().__init__(track_id, token)
-        self.headers['X-App-Device-Id'] = device_id
+        if device_id:
+            self.headers['X-App-Device-Id'] = device_id
 
     def claimable_packs(self):
         return self.get('api/v1/packs/claimable').json()
@@ -107,6 +108,7 @@ class CLI(BasicCLI):
             'state': 0,
             'attributes': {
                 'unit_of_measurement': 'EUR',
+                'claims': 0,
             },
         }
 
@@ -161,17 +163,40 @@ class CLI(BasicCLI):
                 d = mclient.track_activate(track['track_id'])
                 if not d['ok']:
                     raise Exception(d)
-                for m in track['missions']:
-                    if m['mission_name_translation_key'] == 'mission_detail__title_check_in':
-                        if m['streak_complete']:
-                            continue
-                        print('mission: checking in')
-                        d = mclient.mission_checkin(m['mission_id'])
-                        if not d['ok']:
-                            raise Exception(d)
+                for mission in track['missions']:
+                    if mission['mission_name_translation_key'] != ('mission_detail__title_check_in'):
+                        continue
+                    if mission['streak_complete']:
+                        continue
+                    print('mission: checking in')
+                    d = mclient.mission_checkin(mission['mission_id'])
+                    if not d['ok']:
+                        raise Exception(d)
+                    hass_data['attributes']['claims'] += 1
 
             hass_data['attributes']['diamonds'] = vault_diamonds
             print(f'diamonds: {vault_diamonds}')
+
+        rewards = RewardsHubClient(self.track_id, self.token)
+        rips = RipsClient(self.track_id, self.token)
+        checkin = rewards.checkin_detail()
+
+        checkin_data = checkin.get('data', checkin)
+        if not self.skip_mission and checkin_data.get('is_claimed') is False:
+            mission_id = checkin_data['mission_id']
+            print('check-in is unclaimed, claiming it...')
+            claim_result = rewards.claim_checkin(mission_id)
+            reward_amount = claim_result['reward_amount']
+            hass_data['attributes']['claims'] += 1
+            print(f'check-in claim: {reward_amount["amount"]} {reward_amount["currency"]}')
+
+        claimable_packs = rips.claimable_packs()
+        print(f'rips has_more: {claimable_packs["has_more"]}')
+        hass_data['attributes']['rips_has_more'] = claimable_packs['has_more']
+
+        daily_reward = client.daily_reward()
+        print(f'airdrop arena points: {daily_reward["points"]}')
+        hass_data['attributes']['airdrop_arena_points'] = float(daily_reward['points'])
 
         print(f'\nTotal: {hass_data["state"]}')
         return hass_data
