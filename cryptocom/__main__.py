@@ -170,20 +170,20 @@ class CLI(BasicCLI):
             hass_data['attributes']['diamonds'] = vault_diamonds
             print(f'diamonds: {vault_diamonds}')
 
-        print('\nNew Crypto.com endpoint responses:')
         rewards = RewardsHubClient(self.track_id, self.token)
         rips = RipsClient(self.track_id, self.token)
         checkin = rewards.checkin_detail()
-        print('\ncheck-in detail:')
-        print(json.dumps(checkin, indent=2, ensure_ascii=False))
 
         checkin_data = checkin.get('data', checkin)
         if not self.skip_mission and checkin_data.get('is_claimed') is False:
             mission_id = checkin_data['mission_id']
-            print('check-in is unclaimed; claiming it')
+            print('check-in is unclaimed, claiming it...')
             claim_result = rewards.claim_checkin(mission_id)
-            print('check-in claim:')
-            print(json.dumps(claim_result, indent=2, ensure_ascii=False))
+            reward_amount = claim_result['reward_amount']
+            print(
+                f'check-in claim: {reward_amount["amount"]} '
+                f'{reward_amount["currency"]}'
+            )
 
         claimable_packs = rips.claimable_packs()
         print(f'\nRips claimable packs has_more: {claimable_packs["has_more"]}')
