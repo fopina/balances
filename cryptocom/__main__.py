@@ -75,9 +75,11 @@ class RewardsHubClient(Client):
     def checkin_detail(self):
         return self.get('api/v1/mission/check-in/detail').json()
 
-    def claim_checkin(self, payload):
-        """Claim check-in using the request body captured from the app."""
-        return self.post('api/v1/mission/check-in/claim', json=payload).json()
+    def claim_checkin(self, mission_id):
+        """Claim check-in using the mission ID from the detail response."""
+        return self.post(
+            'api/v1/mission/check-in/claim', json={'mission_id': mission_id}
+        ).json()
 
     def claim_mission(self, payload):
         """Claim another mission using the request body captured from the app."""
@@ -179,7 +181,7 @@ class CLI(BasicCLI):
         if not self.skip_mission and checkin_data.get('is_claimed') is False:
             mission_id = checkin_data['mission_id']
             print('check-in is unclaimed; claiming it')
-            claim_result = rewards.claim_checkin({'mission_id': mission_id})
+            claim_result = rewards.claim_checkin(mission_id)
             print('check-in claim:')
             print(json.dumps(claim_result, indent=2, ensure_ascii=False))
 
